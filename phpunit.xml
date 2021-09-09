@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory suffix="Test.php">./tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory suffix="Test.php">./tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">./app</directory>
+        </include>
+    </coverage>
+    <php>
+        <server name="APP_ENV" value="testing"/>
+        <server name="BCRYPT_ROUNDS" value="4"/>
+        <server name="CACHE_DRIVER" value="array"/>
+        <!-- <server name="DB_CONNECTION" value="sqlite"/> -->
+        <!-- <server name="DB_DATABASE" value=":memory:"/> -->
+        <server name="MAIL_MAILER" value="array"/>
+        <server name="QUEUE_CONNECTION" value="sync"/>
+        <server name="SESSION_DRIVER" value="array"/>
+        <server name="TELESCOPE_ENABLED" value="false"/>
+        <env name="INTERNETWORX_USERNAME" value="hmennen"/>
+        <env name="INTERNETWORX_PASSWORD" value="baeker-1T"/>
+        <env name="FORGE_TOKEN" value="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiN2NiYmRlM2MxNTkxZGY4ODQyZDc0NjdlM2RlNWQ4YzcyZGIyMzY0NWZhZGMxZWI3Y2JkMmJlYjllOWYzNTA3M2E5ZDllZTE2ZjQzODc5YWEiLCJpYXQiOjE2MzExNjU3MjcuNDI4MTMsIm5iZiI6MTYzMTE2NTcyNy40MjgxMzMsImV4cCI6MTk0NjY5ODUyNy40MDQ3MDEsInN1YiI6IjEzMjYwOSIsInNjb3BlcyI6W119.NI3fdDugERMN4VUhm59js4rmi2W2uNKOK_-MQHU3wdFCmJxD1NYsoETYZLTLOwpPGyG6R7PWHyiqFsrmdZtBt98t6ywSs4nL0B9DSUs2JHD12T05LVaGGEDwYe0RKggjJ2cUWprQ6034tnlg0xQvoKUeyI5MHRqyxW_atoouzkWQyFy6hAg8uGOphZiW2cDcGSlmzQ-gFUxXYNV7AA7i29dQtGI0kF5uTLPKihF1z50CnUQ_Nn0a49Bv9Gut068tO6g8LaghGmVRRpSC5W_D66qd49vcQZ5SiDwaqhJ7_hY61ykxV8oZ1WWdHYpbE75lqXCrIcxcXu5_2LS5ZOPCQ55CFjSV0x3RBntkgDyr7HrSGJenON61mQ1JtFqPLr3ko6vAUBiEBUcKSUPi20-ytcENckrD0pH34dSdtCFi6_vsW2JH7DVNB8GVWSrrxXuPU1UiLfUw1UdVQ1IFswkViuf-kPtUz-jxUbcs-5ayNzUbTPwuY-krRh5r4qWHABmkBTZBnoMqdqNnNLjD47TvNGupORn5ylOmRrtkwdDkKzSX0jQ9ONzXoWzSviZyi9DAFNUSv15CKGe1livr02MbP6YXGYRWkSVNb-RISdO426zy8APGsFew1pLc_hYvNR3u9K9oUHxFd7SHPje-61sJFsxIbp1BF7pA_F07EOLrhjM"/>
+    </php>
+</phpunit>
