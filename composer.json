@@ -39,7 +39,7 @@
     "scripts": {
         "post-install-cmd": [
             "Composer\\Config::disableProcessTimeout",
-            "composer update",
+            "@php artisan migrate",
             "@php artisan lexoffice:contacts:sync",
             "@php artisan lexoffice:invoices:sync",
             "@php artisan internetworx:domains:price:sync",
