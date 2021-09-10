@@ -80,12 +80,14 @@ class SyncLexofficeInvoices extends Command
 
                 do {
                     $result = $this->voucherlistEndpoint->setPage($page)->index();
-                    foreach ($result->content as $invoice) {
-                        $customerInvoices->add($invoice);
+                    if($result) {
+                        foreach ($result->content as $invoice) {
+                            $customerInvoices->add($invoice);
+                        }
                     }
 
                     $page += 1;
-                } while ($result->last === false);
+                } while ($result &&$result->last === false);
             }
         }
 
