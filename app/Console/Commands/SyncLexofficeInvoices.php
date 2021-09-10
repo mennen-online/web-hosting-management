@@ -42,7 +42,12 @@ class SyncLexofficeInvoices extends Command
      */
     public function handle() {
         if ($this->voucherlistEndpoint->isLexofficeAvailable()) {
-            $this->withProgressBar(Customer::all(), function ($customer) {
+            $customers = Customer::all()->filter(function($customer) {
+                if($customer->invoices()->first() === null) {
+                    return $customer;
+                }
+            });
+            $this->withProgressBar($customers, function ($customer) {
                 $this->processImportCustomer($customer);
             });
         }
@@ -63,8 +68,7 @@ class SyncLexofficeInvoices extends Command
         ] as $voucherStatus) {
             foreach ([
                 'invoice',
-                'creditnote',
-                'orderconfirmation'
+                'creditnote'
             ] as $voucherType) {
                 $this->voucherlistEndpoint->setVoucherType($voucherType);
                 $this->voucherlistEndpoint->setContactId($customer->lexoffice_id);

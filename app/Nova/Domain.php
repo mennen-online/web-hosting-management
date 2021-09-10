@@ -27,7 +27,7 @@ class Domain extends Resource
      *
      * @var string
      */
-    public static $title = 'id';
+    public static $title = 'name';
 
     /**
      * The columns that should be searched.
@@ -35,7 +35,7 @@ class Domain extends Resource
      * @var array
      */
     public static $search = [
-        'id',
+        'id', 'name'
     ];
 
     /**
@@ -48,6 +48,8 @@ class Domain extends Resource
     {
         return [
             ID::make(__('ID'), 'id')->sortable(),
+            Text::make(__('Name'), 'name')->readonly(true)
+                ->showOnCreating(false),
             BelongsTo::make(__('User'))->searchable(true),
             Chain::as('domainname', function() {
                 return [

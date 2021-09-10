@@ -52,7 +52,7 @@ class SyncLexofficeContacts extends Command
             $page = 0;
             do {
                 $this->line("Processing Page " . $page, 'info');
-                $results = $this->contactsEndpoint->setPageSize(250)->setPage($page)->index();
+                $results = $this->contactsEndpoint->setPageSize(500)->setPage($page)->index();
                 $page += 1;
                 $contacts = collect($results->content);
                 $this->withProgressBar($contacts, function($contact) {

@@ -64,13 +64,22 @@ class SyncInternetworxDomains extends Command
 
             $user = User::where('email', $contact['email'])->first();
 
-            $user->customerProducts()->create([
-                'customer_id' => $user->customer->id,
-                'domain_id' => $newDomain->id,
-                'product_id' => null,
-                'server_id' => null,
-                'active'    => true
-            ]);
+            if($user === null) {
+                $newDomain->delete();
+            }else {
+                $user->customerProducts()->updateOrCreate(
+                    [
+                        'customer_id' => $user->customer->id,
+                        'domain_id'   => $newDomain->id,
+                    ],
+                    [
+                        'customer_id' => $user->customer->id,
+                        'domain_id'   => $newDomain->id,
+                        'product_id'  => null,
+                        'server_id'   => null,
+                        'active'      => true
+                    ]);
+            }
         });
 
         return 0;
