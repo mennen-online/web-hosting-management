@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -28,12 +29,16 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
                 $command->secret('Password')
             ];
         }, function($firstName, $lastName, $email, $password) {
-            (new User)->forceFill([
+            $user = (new User)->forceFill([
                 'first_name' => $firstName,
                 'last_name' => $lastName,
                 'email' => $email,
                 'password' => Hash::make($password)
             ])->save();
+
+            $role = Role::byName('Administrator');
+
+            $user->roles()->attach($role);
         });
     }
 
