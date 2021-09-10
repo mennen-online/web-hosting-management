@@ -46,7 +46,7 @@ class Product extends Resource
             ID::make(__('ID'), 'id')->sortable(),
             Text::make(__('Name'), 'name'),
             Text::make(__('Description'), 'description'),
-            Currency::make(__('Price'), 'price')->currency('EUR')
+            Currency::make(__('Price per Year'), 'price')->currency('EUR')
         ];
     }
 
