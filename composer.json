@@ -39,11 +39,7 @@
     "scripts": {
         "post-install-cmd": [
             "Composer\\Config::disableProcessTimeout",
-            "@php artisan migrate --force",
-            "@php artisan lexoffice:contacts:sync",
-            "@php artisan lexoffice:invoices:sync",
-            "@php artisan internetworx:domains:price:sync",
-            "@php artisan internetworx:domains:sync"
+            "@php artisan migrate --force"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
