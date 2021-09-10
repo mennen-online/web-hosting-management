@@ -65,7 +65,9 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     protected function gate()
     {
         Gate::define('viewNova', function ($user) {
-            return $user->roles()->byName('Administrator')->first();
+            return $user->roles()->whereIn('name', [
+                'Administrator', 'Accounting'
+            ])->first();
         });
     }
 
