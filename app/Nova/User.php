@@ -2,6 +2,7 @@
 
 namespace App\Nova;
 
+use App\Nova\Filters\User\CustomerFilter;
 use Illuminate\Http\Request;
 use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\BelongsToMany;
@@ -12,6 +13,7 @@ use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Password;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
+use Laravel\Nova\Panel;
 
 class User extends Resource
 {
@@ -21,13 +23,6 @@ class User extends Resource
      * @var string
      */
     public static $model = \App\Models\User::class;
-
-    /**
-     * The single value that should be used to represent the resource when being displayed.
-     *
-     * @var string
-     */
-    public static $title = 'name';
 
     public static $with = ['roles'];
 
@@ -73,12 +68,18 @@ class User extends Resource
             BelongsToMany::make('Roles', 'roles'),
 
             HasOne::make('Customer', 'customer'),
-
-            HasManyThrough::make('Customer Contacts', 'customerContacts'),
-
-            HasManyThrough::make('Customer Invoices', 'customerInvoices'),
-
-            HasManyThrough::make('Customer Products', 'customerProducts'),
+            $this->mergeWhen(
+                $this->hasCustomerAndRelation('contacts'),
+                HasManyThrough::make('Customer Contacts', 'customerContacts'),
+            ),
+            $this->mergeWhen(
+                $this->hasCustomerAndRelation('invoices'),
+                HasManyThrough::make('Customer Invoices', 'customerInvoices'),
+            ),
+            $this->mergeWhen(
+                $this->hasCustomerAndRelation('products'),
+                HasManyThrough::make('Customer Products', 'customerProducts'),
+            ),
         ];
     }
 
@@ -99,7 +100,9 @@ class User extends Resource
      * @return array
      */
     public function filters(Request $request) {
-        return [];
+        return [
+            new CustomerFilter()
+        ];
     }
 
     /**
@@ -120,5 +123,16 @@ class User extends Resource
      */
     public function actions(Request $request) {
         return [];
+    }
+
+    public function title() {
+        return $this->first_name . ' ' . $this->last_name;
+    }
+
+    private function hasCustomerAndRelation(?string $relation = null) {
+        if($relation === null) {
+            return $this->resource->customer;
+        }
+        return $this->resource->customer && $this->resource->customer->$relation()->count() !== 0;
     }
 }

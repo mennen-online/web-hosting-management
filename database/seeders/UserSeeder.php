@@ -16,12 +16,20 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        $role = Role::byName('Administrator');
+        $administratorRole = Role::byName('Administrator');
 
-        $user = User::factory()->create([
+        $administrator = User::factory()->create([
             'email' => 'admin@nova.com'
         ]);
 
-        $user->roles()->using($role);
+        $administrator->roles()->attach($administratorRole);
+
+        $customerRole = Role::byName('Customer');
+
+        $customer = User::factory()->create([
+            'email' => 'customer@nova.com'
+        ]);
+
+        $customer->roles()->attach($customerRole);
     }
 }

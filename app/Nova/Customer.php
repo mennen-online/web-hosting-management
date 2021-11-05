@@ -3,12 +3,17 @@
 namespace App\Nova;
 
 use App\Services\Lexoffice\Endpoints\ContactsEndpoint;
-use Arr;
+use Armincms\Fields\Chain;
 use Illuminate\Http\Request;
+use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\HasMany;
 use Laravel\Nova\Fields\ID;
+use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
+use Laravel\Nova\Fields\Textarea;
+use Laravel\Nova\Fields\Trix;
 use Laravel\Nova\Http\Requests\NovaRequest;
+use Laravel\Nova\Panel;
 
 class Customer extends Resource
 {
@@ -24,7 +29,7 @@ class Customer extends Resource
      *
      * @var string
      */
-    public static $title = 'id';
+    public static $title = 'user.name';
 
     /**
      * The columns that should be searched.
@@ -44,26 +49,78 @@ class Customer extends Resource
      * @return array
      */
     public function fields(Request $request) {
-        $company = json_decode($this->resource->company);
+        if ($this->resource->exists) {
+            $customer = app()->make(ContactsEndpoint::class)->get($this->lexoffice_id);
+            return [
+                BelongsTo::make(__('User'))->readonly(true),
+                ID::make(__('ID'), 'id')->readonly(true)->showOnIndex(false),
+                Text::make(__('Lexoffice ID'))->readonly(true)->showOnIndex(false),
+                Text::make(__('Kundennummer'), 'customer_number', function() use($customer) {
+                    return $customer->roles->customer->number;
+                })->readonly(),
+                new Panel(__('Billing'), function() use($customer){
+                    return [
+                        Text::make(__('Street & Number'), 'street_number', function() use($customer) {
+                            return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->street : '';
+                        })->readonly($this->addressCanBeUpdated($customer)),
+                        Text::make(__('Supplement'), 'supplement', function() use($customer) {
+                            return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->supplement : '';
+                        })->readonly($this->addressCanBeUpdated($customer)),
+                        Text::make(__('Postcode'), 'postcode', function() use($customer) {
+                            return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->zip : '';
+                        })->readonly($this->addressCanBeUpdated($customer)),
+                        Text::make(__('City'), 'city', function() use($customer) {
+                            return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->city : '';
+                        })->readonly($this->addressCanBeUpdated($customer)),
+                        Select::make(__('Country'), 'countryCode', function() use($customer) {
+                            return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->countryCode : '';
+                        })->options([
+                            'DE' => 'Deutschland',
+                            'IT' => 'Italien',
+                            'FR' => 'Frankreich'
+                        ])->readonly($this->addressCanBeUpdated($customer))
+                    ];
+                }),
+            ];
+        }
+
         return [
-            ID::make(__('ID'), 'id')->sortable(),
-            Text::make(__('Kundennummer'), function () {
-                return app()->make(ContactsEndpoint::class)->get($this->resource->lexoffice_id)->roles->customer->number;
-            })->readonly(true),
-            Text::make(__('Unternehmen'), function () use ($company) {
-                return $company ? $company->name : '';
-            })->readonly(true),
-            Text::make(__('Anrede'), function () {
-                return $this->resource->contacts()->first()->salutation;
-            })->readonly(true),
-            Text::make(__('Vorname'), function () {
-                return $this->resource->contacts()->first()->first_name;
-            })->readonly(true),
-            Text::make(__('Nachname'), function () {
-                return $this->resource->contacts()->first()->last_name;
-            })->readonly(true),
-            HasMany::make('Contact Persons', 'contacts', CustomerContact::class),
-            HasMany::make('Customer Invoices', 'invoices', CustomerInvoice::class)
+            BelongsTo::make(__('User'))->withoutTrashed()->showCreateRelationButton(true),
+            Chain::as('customer_type', function () {
+                return [
+                    Select::make(__('Art des Kunden'), 'customer_type')->options([
+                        'company' => 'Unternehmen',
+                        'person'  => 'Privatperson'
+                    ])
+                ];
+            }),
+            Chain::with('customer_type', function ($request) {
+                $user = \App\Models\User::find($request->viaResourceId);
+                $fields = match ($request->input('customer_type')) {
+                    'company' => [
+                        Text::make(__('Name des Unternehmens'), 'company.name'),
+                        Text::make(__('Steuernummer'), 'taxNumber'),
+                        Text::make(__('Umsatzsteuer ID'), 'vatRegistrationId'),
+                        HasMany::make(__('Contact Persons'), 'contacts', CustomerContact::class)
+                    ],
+                    'person' => [
+                        Select::make(__('Anrede'), 'salutation')->options([
+                            'Herr' => 'Herr',
+                            'Frau' => 'Frau'
+                        ]),
+                        Text::make(__('Vorname'), 'firstName')->withMeta([
+                            'value' => $user->first_name
+                        ]),
+                        Text::make(__('Nachname'), 'lastName')->withMeta([
+                            'value' => $user->last_name
+                        ]),
+                        Trix::make(__('Notizen'), 'note')
+                    ],
+                    null => []
+                };
+
+                return $fields;
+            })
         ];
     }
 
@@ -73,7 +130,8 @@ class Customer extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function cards(Request $request) {
+    public
+    function cards(Request $request) {
         return [];
     }
 
@@ -83,7 +141,8 @@ class Customer extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function filters(Request $request) {
+    public
+    function filters(Request $request) {
         return [];
     }
 
@@ -93,7 +152,8 @@ class Customer extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function lenses(Request $request) {
+    public
+    function lenses(Request $request) {
         return [];
     }
 
@@ -103,7 +163,12 @@ class Customer extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function actions(Request $request) {
+    public
+    function actions(Request $request) {
         return [];
+    }
+
+    private function addressCanBeUpdated(object $customer) {
+        return (property_exists($customer, 'addresses') && property_exists($customer->addresses, 'billing') && count($customer->addresses->billing) > 1);
     }
 }

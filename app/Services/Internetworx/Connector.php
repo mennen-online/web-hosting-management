@@ -2,7 +2,11 @@
 
 namespace App\Services\Internetworx;
 
+use App\Exceptions\InternetworxException;
+use Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use INWX\Domrobot;
 
 class Connector
@@ -29,5 +33,19 @@ class Connector
         }
 
         return $this;
+    }
+
+    public function isOte() {
+        return $this->domrobot->isOte();
+    }
+
+    protected function processResponse($response, string $object): Collection {
+        $code = Arr::get($response, 'code');
+        if(!Arr::has($response, 'resData.' . $object) && !Str::is([1000, 1001], $code)) {
+            Log::warning(json_encode($response));
+            throw new InternetworxException(json_encode($response));
+        }
+
+        return collect(Arr::get($response, 'resData.'.$object));
     }
 }

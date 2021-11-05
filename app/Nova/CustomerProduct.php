@@ -3,6 +3,7 @@
 namespace App\Nova;
 
 use App\Models\Domain;
+use App\Services\Forge\Endpoints\ServersEndpoint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Laravel\Nova\Fields\BelongsTo;
@@ -36,8 +37,6 @@ class CustomerProduct extends Resource
         'id',
     ];
 
-    public static $displayInNavigation = false;
-
     /**
      * Get the fields displayed by the resource.
      *
@@ -47,9 +46,9 @@ class CustomerProduct extends Resource
     public function fields(Request $request)
     {
         return [
-            ID::make(__('ID'), 'id')->sortable(),
-            BelongsTo::make(__('Product'))->searchable(true),
-            BelongsTo::make(__('Domain'))->showCreateRelationButton(true)
+            BelongsTo::make(__('Customer')),
+            BelongsTo::make(__('Product')),
+            BelongsTo::make(__('Domain'))->showCreateRelationButton()
         ];
     }
 

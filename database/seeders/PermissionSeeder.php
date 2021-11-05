@@ -10,6 +10,7 @@ use App\Models\Domain;
 use App\Models\Permission;
 use App\Models\Product;
 use App\Models\Role;
+use App\Models\Server;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
@@ -17,11 +18,11 @@ use Illuminate\Support\Str;
 
 class PermissionSeeder extends Seeder
 {
-    private array $models = [
+    public array $models = [
         User::class,
         Customer::class,
         Product::class,
-        \App\Models\Server::class,
+        Server::class,
         Domain::class,
         CustomerProduct::class,
         CustomerInvoice::class,
@@ -30,7 +31,7 @@ class PermissionSeeder extends Seeder
         Permission::class
     ];
 
-    private array $actions = [
+    public array $actions = [
         'viewAny',
         'view',
         'store',

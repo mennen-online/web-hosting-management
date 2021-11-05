@@ -3,6 +3,7 @@
 namespace App\Nova;
 
 use Illuminate\Http\Request;
+use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
@@ -22,7 +23,6 @@ class CustomerContact extends Resource
      *
      * @var string
      */
-    public static $title = 'id';
 
     /**
      * The columns that should be searched.
@@ -41,14 +41,14 @@ class CustomerContact extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function fields(Request $request)
-    {
+    public function fields(Request $request) {
         return [
+            BelongsTo::make(__('Customer'))->searchable(),
             ID::make(__('ID'), 'id')->sortable(),
             Select::make(__('Salutation'))->options([
-                '' => 'Keine Anrede',
-                'Herr' => 'Herr',
-                'Frau' => 'Frau',
+                ''       => 'Keine Anrede',
+                'Herr'   => 'Herr',
+                'Frau'   => 'Frau',
                 'Divers' => 'Divers'
             ]),
             Text::make(__('First Name'), 'first_name'),
@@ -64,8 +64,8 @@ class CustomerContact extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function cards(Request $request)
-    {
+    public
+    function cards(Request $request) {
         return [];
     }
 
@@ -75,8 +75,8 @@ class CustomerContact extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function filters(Request $request)
-    {
+    public
+    function filters(Request $request) {
         return [];
     }
 
@@ -86,8 +86,8 @@ class CustomerContact extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function lenses(Request $request)
-    {
+    public
+    function lenses(Request $request) {
         return [];
     }
 
@@ -97,8 +97,13 @@ class CustomerContact extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function actions(Request $request)
-    {
+    public
+    function actions(Request $request) {
         return [];
+    }
+
+    public
+    function title() {
+        return $this->salutation.' '.$this->first_name.' '.$this->last_name;
     }
 }

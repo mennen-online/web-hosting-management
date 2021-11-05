@@ -15,26 +15,23 @@ class ContactTest extends TestCase
     protected function setUp(): void {
         parent::setUp();
 
-        $this->app['config']->set('internetworx', [
-            'username' => config('internetworx.username'),
-            'password' => config('internetworx.password')
-        ]);
-
         $this->contactObject = new ContactObject();
+
+        if(!$this->contactObject->isOte()) {
+            $this->markTestSkipped('Internetworx is Not in OTE Mode');
+        }
+    }
+
+    protected function tearDown(): void {
+        parent::tearDown();
+
+        $this->contactObject->index(1, 50000)->each(function($contact) {
+            $this->contactObject->delete($contact['id']);
+        });
     }
 
     public function testIndexContacts() {
-        $response = $this->contactObject->index(1, 500);
-
-        $this->assertIsArray($response);
-
-        $this->assertEquals(1000, $response['code']);
-
-        $this->assertArrayHasKey('contact', $response['resData']);
-
-        $contacts = collect($response['resData']['contact']);
-
-        $this->assertEquals($contacts->count(), $response['resData']['count']);
+        $contacts = $this->contactObject->index(1, 500);
 
         $contacts->each(function($contact) {
             foreach(['roId', 'id', 'type', 'name', 'street', 'city', 'pc', 'cc', 'voice', 'email', 'protection', 'verificationStatus'] as $key) {
@@ -46,11 +43,7 @@ class ContactTest extends TestCase
     public function testReceiveSingleContact() {
         $contacts = $this->contactObject->index(1, 500);
 
-        $contact = collect($contacts['resData']['contact'])->random(1)->first();
-
-        $response = $this->contactObject->index(1, 500, $contact['roId']);
-
-        $result = Arr::first($response['resData']['contact']);
+        $result = $contacts->first();
 
         foreach(['roId', 'id', 'type', 'name', 'street', 'city', 'pc', 'cc', 'voice', 'email', 'protection', 'verificationStatus'] as $key) {
             $this->assertArrayHasKey($key, $result);

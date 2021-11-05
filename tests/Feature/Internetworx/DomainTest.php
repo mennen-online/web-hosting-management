@@ -16,12 +16,27 @@ class DomainTest extends TestCase
     protected function setUp(): void {
         parent::setUp();
 
-        $this->app['config']->set('internetworx', [
-            'username' => config('internetworx.username'),
-            'password' => config('internetworx.password')
-        ]);
-
         $this->domainObject = new DomainObject();
+
+        if(!$this->domainObject->isOte()) {
+            $this->markTestSkipped('Internetworx is Not in OTE Mode');
+        }
+    }
+
+    protected function tearDown(): void {
+        parent::tearDown();
+
+        $page = 1;
+
+        $pageSize = 500;
+
+        $results = $this->domainObject->index($page, $pageSize);
+        $results->each(function($domain) {
+            if($domain['status'] !== 'DELETE REQUESTED') {
+                $this->domainObject->delete($domain['domain']);
+                echo "Deleted ".$domain['domain']."\r\n";
+            }
+        });
     }
 
     public function testCheckDomain() {
@@ -29,29 +44,13 @@ class DomainTest extends TestCase
 
         $response = $this->domainObject->check($domain);
 
-        $this->assertIsArray($response);
-
-        $this->assertEquals(1000, $response['code']);
-
-        $this->assertArrayHasKey('domain', $response['resData']);
-
         foreach(['domain', 'avail', 'status', 'checktime', 'premium'] as $key) {
-            $this->assertArrayHasKey($key, $response['resData']['domain'][0]);
+            $this->assertArrayHasKey($key, $response[0]);
         }
     }
 
     public function testIndexDomain() {
-        $response = $this->domainObject->index(0, 5000);
-
-        $this->assertIsArray($response);
-
-        $this->assertEquals(1000, $response['code']);
-
-        $this->assertArrayHasKey('domain', $response['resData']);
-
-        $domains = collect($response['resData']['domain']);
-
-        $this->assertEquals($domains->count(), $response['resData']['count']);
+        $domains = $this->domainObject->index(0, 5000);
 
         $domains->each(function($domain) {
             foreach(['roId', 'domain', 'domain-ace', 'withPrivacy', 'period', 'crDate', 'exDate', 'reDate', 'upDate', 'transferLock', 'status', 'authCode', 'renewalMode', 'transferMode', 'registrant', 'admin', 'tech', 'billing', 'ns', 'verificationStatus'] as $key) {

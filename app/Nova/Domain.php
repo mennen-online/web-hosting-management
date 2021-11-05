@@ -5,6 +5,7 @@ namespace App\Nova;
 use App\Services\Internetworx\Objects\DomainObject;
 use Armincms\Fields\Chain;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\Boolean;
 use Laravel\Nova\Fields\Currency;
@@ -58,13 +59,16 @@ class Domain extends Resource
             }),
             Chain::with('domainname', function($request) {
                 $domain = $request->input('name');
+                if(!\App\Models\Product::where('description', 'LIKE', '%Domain%')->first()) {
+                    Artisan::call('internetworx:domains:price:sync');
+                }
                 $tlds = \App\Models\Product::where('description', 'LIKE', '%Domain%')->get()->pluck('name')->map(function($tld) {
                     return '.'.$tld;
                 });
                 if(Str::endsWith($domain, $tlds->toArray())) {
                     $domainObject = app()->make(DomainObject::class);
-                    $status = $domainObject->check($domain)['resData']['domain'][0];
-                    $price = $domainObject->getPrice($domain)['resData']['domain'][$status['domain']];
+                    $status = $domainObject->check($domain)[0];
+                    $price = $domainObject->getPrice($domain)[$status['domain']];
 
                     return [
                         Currency::make(__('Price'), function() use($status, $price) {

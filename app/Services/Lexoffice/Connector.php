@@ -2,6 +2,8 @@
 
 namespace App\Services\Lexoffice;
 
+use App\Exceptions\LexofficeException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -11,15 +13,17 @@ class Connector
 {
     protected const LEXOFFICE_API_URL = 'https://api.lexoffice.io/v1';
 
-    protected bool $lexofficeIsAvailable = false;
-
-    protected int $page = 0;
-
-    protected int $pageSize = 25;
-
     public function __construct(
-        protected ?string $lexofficeAccessToken = null
+        protected bool $lexofficeIsAvailable = false,
+        protected ?string $lexofficeAccessToken = null,
+        protected ?Response $response = null,
+        protected int $page = 0,
+        protected int $pageSize = 25
     ) {
+        $this->getAccessTokenFromConfig();
+    }
+
+    private function getAccessTokenFromConfig() {
         $this->lexofficeAccessToken = config('lexoffice.access_token');
 
         if($this->lexofficeAccessToken === null) {
@@ -52,10 +56,48 @@ class Connector
 
         $query['size'] = $this->pageSize;
 
+        $this->response = $this->prepareRequest()
+            ->get(self::LEXOFFICE_API_URL.$endpoint, Arr::query($query));
+
+        return $this->processResponse();
+    }
+
+    protected function postRequest(string $endpoint, array $data) {
+        if(!Str::startsWith($endpoint, '/')) {
+            $endpoint = '/' . $endpoint;
+        }
+
+        $this->response = $this->prepareRequest()
+            ->post(self::LEXOFFICE_API_URL.$endpoint, $data);
+
+        return $this->processResponse();
+    }
+
+    protected function putRequest(string $endpoint, string $resourceId, array $data) {
+        if(!Str::startsWith($endpoint, '/')) {
+            $endpoint = '/' . $endpoint;
+        }
+
+        $endpoint = $endpoint.'/'.$resourceId;
+
+        $this->response = $this->prepareRequest()->put(self::LEXOFFICE_API_URL.$endpoint, $data);
+
+        return $this->processResponse();
+    }
+
+    private function prepareRequest() {
         return Http::withToken($this->lexofficeAccessToken)
             ->withHeaders([
                 'accept' => 'application/json'
-            ])
-            ->get(self::LEXOFFICE_API_URL.$endpoint, Arr::query($query));
+            ]);
+    }
+
+    private function processResponse() : object {
+        if($this->response->status() !== 200) {
+            Log::warning(json_encode($this->response->object()));
+            throw new LexofficeException(json_encode($this->response->object()));
+        }
+
+        return $this->response->object();
     }
 }

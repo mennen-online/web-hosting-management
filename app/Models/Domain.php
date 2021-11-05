@@ -24,6 +24,6 @@ class Domain extends Model
     }
 
     public function customerProduct() {
-        return $this->hasMany(CustomerProduct::class);
+        return $this->hasOne(CustomerProduct::class);
     }
 }

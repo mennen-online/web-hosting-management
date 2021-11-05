@@ -49,9 +49,7 @@ class SyncInternetworxDomains extends Command
 
         $this->contactObject = app()->make(ContactObject::class);
 
-        $domains = collect($this->domainObject->index(0, 5000)['resData']['domain']);
-
-        $this->withProgressBar($domains, function($domain) {
+        $this->withProgressBar($this->domainObject->index(0, 5000), function($domain) {
             $newDomain = Domain::firstOrCreate(
                 [
                     'name' => $domain['domain']
@@ -60,7 +58,7 @@ class SyncInternetworxDomains extends Command
             ]);
             $contactId = $domain['registrant'];
 
-            $contact = $this->contactObject->index(1, 1, $contactId)['resData']['contact'][0];
+            $contact = $this->contactObject->index(1, 1, $contactId)[0];
 
             $user = User::where('email', $contact['email'])->first();
 

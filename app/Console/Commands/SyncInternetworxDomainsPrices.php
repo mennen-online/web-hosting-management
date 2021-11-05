@@ -42,8 +42,8 @@ class SyncInternetworxDomainsPrices extends Command
 
         $response = $domainObject->indexPrice();
 
-        $prices = collect($response['resData']['price'])->filter(function($price) {
-            if(!Arr::has($price, 'tld-ace')) {
+        $prices = $response->filter(function($price) {
+            if(!Arr::has($price, 'tld-ace') && !empty($price['tld'])) {
                 return $price;
             }
         });

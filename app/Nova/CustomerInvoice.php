@@ -51,40 +51,44 @@ class CustomerInvoice extends Resource
      * @return array
      */
     public function fields(Request $request) {
-        $this->invoicesEndpoint = app()->make(InvoicesEndpoint::class);
+        if($this->resource->exists) {
+            $this->invoicesEndpoint = app()->make(InvoicesEndpoint::class);
 
-        $invoice = $this->invoicesEndpoint->get($this->resource);
+            $invoice = $this->invoicesEndpoint->get($this->resource);
 
-        if ($invoice === null) {
-            Log::error('Invoice cannot be found in Lexoffice', $this->resource->toArray());
-            return [];
+            if ($invoice === null) {
+                Log::error('Invoice cannot be found in Lexoffice', $this->resource->toArray());
+                return [];
+            }
+
+            $fields = [
+                ID::make(__('ID'), 'id')->sortable(),
+                Text::make('Rechnungsnummer', function () use ($invoice) {
+                    return $invoice->voucherNumber;
+                })->readonly(true),
+                Date::make('Rechnungsdatum', function () use ($invoice) {
+                    return Carbon::parse($invoice->voucherDate)->format('d.m.Y');
+                })->readonly(true),
+                Currency::make('Gesamtbetrag inkl. MwSt.', function () use ($invoice) {
+                    return $this->getTotalPrice($invoice);
+                })->currency($invoice->totalPrice->currency)->readonly(true),
+                Number::make('Positionen', function () use ($invoice) {
+                    return count($invoice->lineItems);
+                })->readonly(true)->showOnDetail(false),
+            ];
+
+            $lineItems = $this->lineItemFields($invoice->lineItems);
+
+            foreach ($lineItems as $position => $lineItem) {
+                $fields[] = (new Panel(__('Position '.$position + 1), $lineItem));
+            }
+
+            $fields[] = Date::make('Zahlungsziel (fällig am)', function () use ($invoice) {
+                return Carbon::parse($invoice->voucherDate)->addDays($invoice->paymentConditions->paymentTermDuration)->format('d.m.Y');
+            })->readonly(true);
+        } else {
+            $fields = [];
         }
-
-        $fields = [
-            ID::make(__('ID'), 'id')->sortable(),
-            Text::make('Rechnungsnummer', function () use ($invoice) {
-                return $invoice->voucherNumber;
-            })->readonly(true),
-            Date::make('Rechnungsdatum', function () use ($invoice) {
-                return Carbon::parse($invoice->voucherDate)->format('d.m.Y');
-            })->readonly(true),
-            Currency::make('Gesamtbetrag inkl. MwSt.', function () use ($invoice) {
-                return $this->getTotalPrice($invoice);
-            })->currency($invoice->totalPrice->currency)->readonly(true),
-            Number::make('Positionen', function () use ($invoice) {
-                return count($invoice->lineItems);
-            })->readonly(true)->showOnDetail(false),
-        ];
-
-        $lineItems = $this->lineItemFields($invoice->lineItems);
-
-        foreach($lineItems as $position => $lineItem) {
-            $fields[] = (new Panel(__('Position ' . $position + 1), $lineItem));
-        }
-
-        $fields[] = Date::make('Zahlungsziel (fällig am)', function () use ($invoice) {
-            return Carbon::parse($invoice->voucherDate)->addDays($invoice->paymentConditions->paymentTermDuration)->format('d.m.Y');
-        })->readonly(true);
 
         return $fields;
     }
