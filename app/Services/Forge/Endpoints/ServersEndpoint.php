@@ -15,6 +15,14 @@ class ServersEndpoint extends Connector
         return $this->getRequest('/servers/' . $server->forge_id)->object();
     }
 
+    public function create(array $params) {
+        return $this->postRequest('/servers/', $params)->object();
+    }
+
+    public function delete(Server $server) {
+        return $this->deleteRequest('/servers/' . $server->forge_id)->successful();
+    }
+
     public function events(?Server $server) {
         return $this->getRequest('/servers/events', $server ? [
             'server_id' => $server->forge_id
