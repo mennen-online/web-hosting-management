@@ -13,9 +13,8 @@ class CustomerInvoicesCustomerProducts extends Migration
      *
      * @return void
      */
-    public function up()
-    {
-        Schema::create('customer_invoices_customer_products', function(Blueprint $blueprint) {
+    public function up() {
+        Schema::create('customer_invoices_customer_products', function (Blueprint $blueprint) {
             $blueprint->id();
             $blueprint->foreignIdFor(CustomerInvoice::class);
             $blueprint->foreignIdFor(CustomerProduct::class);
@@ -27,8 +26,7 @@ class CustomerInvoicesCustomerProducts extends Migration
      *
      * @return void
      */
-    public function down()
-    {
-        //
+    public function down() {
+        Schema::dropIfExists('customer_invoices_customer_products');
     }
 }

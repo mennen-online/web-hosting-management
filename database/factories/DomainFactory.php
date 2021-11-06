@@ -22,7 +22,7 @@ class DomainFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'name' => 'meinetest-domain.de'
         ];
     }
 }

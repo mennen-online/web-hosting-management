@@ -15,19 +15,9 @@ class ContactTest extends TestCase
     protected function setUp(): void {
         parent::setUp();
 
-        $this->contactObject = new ContactObject();
-
         if(!$this->contactObject->isOte()) {
             $this->markTestSkipped('Internetworx is Not in OTE Mode');
         }
-    }
-
-    protected function tearDown(): void {
-        parent::tearDown();
-
-        $this->contactObject->index(1, 50000)->each(function($contact) {
-            $this->contactObject->delete($contact['id']);
-        });
     }
 
     public function testIndexContacts() {

@@ -95,4 +95,8 @@ class CustomerProduct extends Resource
     {
         return [];
     }
+
+    public static function relatableProducts(NovaRequest $request, $query) {
+        return $query->where('description', 'NOT LIKE', '%Domain%');
+    }
 }

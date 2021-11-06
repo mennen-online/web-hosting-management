@@ -16,27 +16,9 @@ class DomainTest extends TestCase
     protected function setUp(): void {
         parent::setUp();
 
-        $this->domainObject = new DomainObject();
-
         if(!$this->domainObject->isOte()) {
             $this->markTestSkipped('Internetworx is Not in OTE Mode');
         }
-    }
-
-    protected function tearDown(): void {
-        parent::tearDown();
-
-        $page = 1;
-
-        $pageSize = 500;
-
-        $results = $this->domainObject->index($page, $pageSize);
-        $results->each(function($domain) {
-            if($domain['status'] !== 'DELETE REQUESTED') {
-                $this->domainObject->delete($domain['domain']);
-                echo "Deleted ".$domain['domain']."\r\n";
-            }
-        });
     }
 
     public function testCheckDomain() {

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Nova\Http\Requests\NovaRequest;
 
 class CustomerProduct extends Model
 {
@@ -20,6 +21,10 @@ class CustomerProduct extends Model
         'created_at',
         'updated_at'
     ];
+
+    protected static function boot() {
+        parent::boot();
+    }
 
     public function customer() {
         return $this->belongsTo(Customer::class);

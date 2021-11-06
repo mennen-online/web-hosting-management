@@ -30,6 +30,6 @@ class RolesPermissions extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('roles_permissions');
     }
 }
