@@ -12,10 +12,16 @@ use Illuminate\Support\Facades\Session;
 class DomainObserver
 {
     public function created(Domain $domain) {
-        CreateDomain::dispatch($domain);
+        app()->make(DomainObject::class)->create($domain);
 
-        $data = Session::get($domain->name . '_customer-product');
+        $data = Session::get($domain->name.'_customer-product');
 
         CustomerProduct::find($data['customer_product_id'])->update(['domain_id' => $domain->id]);
+    }
+
+    public function updated(Domain $domain) {
+        if($domain->registrar_id === null) {
+            app()->make(DomainObject::class)->create($domain);
+        }
     }
 }
