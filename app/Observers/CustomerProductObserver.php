@@ -15,8 +15,7 @@ class CustomerProductObserver
      */
     public function created(CustomerProduct $customerProduct)
     {
-        $domain = $customerProduct->domain;
-        app()->make(DomainObject::class)->create($domain);
+
     }
 
     /**

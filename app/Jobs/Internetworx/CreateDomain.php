@@ -4,6 +4,7 @@ namespace App\Jobs\Internetworx;
 
 use App\Models\Domain;
 use App\Models\User;
+use App\Notifications\Customer\DomainRegistrationSuccessful;
 use App\Services\Internetworx\Objects\DomainObject;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -36,5 +37,11 @@ class CreateDomain implements ShouldQueue
     public function handle()
     {
         app()->make(DomainObject::class)->create($this->domain);
+
+        $this->domain->refresh();
+
+        if($this->domain->registrar_id !== null) {
+            $this->domain->customerProduct->customer->user->notify(new DomainRegistrationSuccessful($this->domain));
+        }
     }
 }
