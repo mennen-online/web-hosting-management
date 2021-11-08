@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\CustomerProduct;
 use App\Services\Internetworx\Objects\DomainObject;
+use Illuminate\Support\Str;
 
 class CustomerProductObserver
 {
@@ -15,7 +16,11 @@ class CustomerProductObserver
      */
     public function created(CustomerProduct $customerProduct)
     {
+        $product = $customerProduct->product;
 
+        if(class_exists($classname = 'App\\Services\\Product\\Models\\' . Str::kebab($product->name))) {
+            new $classname();
+        }
     }
 
     /**

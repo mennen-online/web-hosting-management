@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Forge;
 
+use App\Jobs\Internetworx\UpdateDns;
 use App\Models\CustomerProduct;
 use App\Models\Server;
 use App\Services\Forge\Endpoints\CredentialsEndpoint;
@@ -56,5 +57,7 @@ class CreateServer implements ShouldQueue
         ]);
 
         $this->customerProduct->update(['server_id' => $server->id]);
+
+        UpdateDns::dispatch($this->customerProduct->domain, $server);
     }
 }
