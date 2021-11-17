@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Session;
 class DomainObserver
 {
     public function created(Domain $domain) {
-        app()->make(DomainObject::class)->create($domain);
+
     }
 
     public function updated(Domain $domain) {
