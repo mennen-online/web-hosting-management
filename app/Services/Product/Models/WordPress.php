@@ -30,7 +30,6 @@ class WordPress
         ])->catch(function(Throwable $throwable) {
             Log::emergency($throwable->getMessage());
             Log::emergency($throwable->getTraceAsString());
-        })
-            ->dispatch();
+        })->dispatch();
     }
 }
