@@ -51,7 +51,7 @@ class Domain extends Resource
             ID::make(__('ID'), 'id')->sortable(),
             Text::make(__('Name'), 'name')->readonly(true)
                 ->showOnCreating(false),
-            BelongsTo::make(__('User'))->searchable(true),
+            BelongsTo::make(__('User')),
             Chain::as('domainname', function() {
                 return [
                     Text::make(__('Name'), 'name')->readonly($this->resource->exists),
