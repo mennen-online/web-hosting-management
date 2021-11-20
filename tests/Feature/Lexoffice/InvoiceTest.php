@@ -29,7 +29,7 @@ class InvoiceTest extends TestCase
 
         Artisan::call('internetworx:domains:price:sync');
 
-        $this->product = Product::first() ?? Product::factory()->create([
+        $this->product = Product::factory()->create([
                 'name'        => 'WordPress',
                 'description' => 'Simple WordPress',
                 'price'       => 120

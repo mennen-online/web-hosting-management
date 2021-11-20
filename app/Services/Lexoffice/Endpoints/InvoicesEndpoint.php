@@ -60,6 +60,7 @@ class InvoicesEndpoint extends Connector
             [
                 'type' => 'custom',
                 'name' => $domain->name,
+                'description' => 'Domain',
                 'quantity' => 1,
                 'unitName' => 'Jahr',
                 'unitPrice' => [
