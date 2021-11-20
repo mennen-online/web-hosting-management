@@ -19,7 +19,7 @@ class Connector
 
         $this->domrobot->setLanguage('de')->useJson();
         if(config('app.env') !== 'production') {
-            $this->domrobot->useOte()->setDebug(true);
+            $this->domrobot->useOte()->setDebug(false);
         }else {
             $this->domrobot->useLive();
         }

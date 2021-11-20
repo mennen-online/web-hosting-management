@@ -74,7 +74,7 @@ class ContactsEndpoint extends Connector
             $query['vendor'] = "true";
         }
 
-        return $this->getRequest('/contacts', $query);
+        return collect($this->getRequest('/contacts', $query)->content);
     }
 
     public function get(string $id) {

@@ -7,6 +7,8 @@ use App\Models\CustomerInvoice;
 use App\Models\CustomerProduct;
 use App\Services\Internetworx\Objects\DomainObject;
 use App\Services\Lexoffice\Connector;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class InvoicesEndpoint extends Connector
 {
@@ -24,7 +26,7 @@ class InvoicesEndpoint extends Connector
 
     public function create(CustomerProduct $customerProduct) {
         $data = [
-            'voucherDate' => now()->toIso8601ZuluString(),
+            'voucherDate' => $this->buildLexofficeDate(now()),
             'address' => $this->buildAddress($customerProduct),
             'lineItems' => $this->buildLineItems($customerProduct),
             'totalPrice' => $this->buildTotalPrice(),
@@ -32,9 +34,7 @@ class InvoicesEndpoint extends Connector
             'shippingConditions' => $this->buildShippingConditions()
         ];
 
-        $response = $this->postRequest('/invoices?finalize=true', $data);
-
-        $customerProduct->customer->invoices()->create(['lexoffice_id' => $response->id]);
+        return $this->postRequest('/invoices?finalize=true', $data);
     }
 
     private function buildAddress(CustomerProduct $customerProduct) {
@@ -64,7 +64,7 @@ class InvoicesEndpoint extends Connector
                 'unitName' => 'Jahr',
                 'unitPrice' => [
                     'currency' => 'EUR',
-                    'netAmount' => (double)$domainPrice['price'],
+                    'netAmount' => number_format($domainPrice[$domain->name]['price'], 2),
                     'taxRatePercentage' => 19
                 ]
             ], [
@@ -96,8 +96,16 @@ class InvoicesEndpoint extends Connector
     private function buildShippingConditions() {
         return [
             'shippingType' => 'serviceperiod',
-            'shippingDate' => now()->toIso8601ZuluString(),
-            'shippingEndDate' => now()->addYear()->toIso8601ZuluString()
+            'shippingDate' => $this->buildLexofficeDate(now()),
+            'shippingEndDate' => $this->buildLexofficeDate(now()->addYear())
         ];
+    }
+
+    private function buildLexofficeDate(Carbon $carbon) {
+        $date = date('c', strtotime($carbon->format('Y-m-d\TH:i:s.vO')));
+
+        $milliseconds = Str::substr($carbon->format('v'), 0, 3);
+
+        return Str::replace('+', '.' . $milliseconds.'+', $date);
     }
 }

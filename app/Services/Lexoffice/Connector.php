@@ -93,7 +93,7 @@ class Connector
     }
 
     private function processResponse() : object {
-        if($this->response->status() !== 200) {
+        if($this->response->status() > 299) {
             Log::warning(json_encode($this->response->object()));
             throw new LexofficeException(json_encode($this->response->object()));
         }

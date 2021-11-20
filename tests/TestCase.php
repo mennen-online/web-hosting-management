@@ -34,7 +34,7 @@ abstract class TestCase extends BaseTestCase
         $this->contactObject = app()->make(ContactObject::class);
     }
 
-    protected function tearDown(): void {
+    /*protected function tearDown(): void {
         parent::tearDown();
 
         $page = 1;
@@ -56,5 +56,5 @@ abstract class TestCase extends BaseTestCase
                 $this->contactObject->delete($contact['id']);
             });
         }
-    }
+    }*/
 }

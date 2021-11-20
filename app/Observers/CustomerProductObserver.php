@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\CustomerProduct;
 use App\Services\Internetworx\Objects\DomainObject;
+use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use Illuminate\Support\Str;
 
 class CustomerProductObserver
@@ -21,6 +22,10 @@ class CustomerProductObserver
         if(class_exists($classname = 'App\\Services\\Product\\Models\\' . Str::kebab($product->name))) {
             new $classname();
         }
+
+        $invoice = app()->make(InvoicesEndpoint::class)->create($customerProduct);
+
+        $customerProduct->customer->invoices()->create(['lexoffice_id' => $invoice->id]);
     }
 
     /**
