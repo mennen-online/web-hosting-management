@@ -20,7 +20,13 @@ class CustomerContactObserver
 
         if($customerContact->customer->contacts()->count() === 1) {
             $customer = $customerContact->customer;
-            app()->make(ContactsEndpoint::class)->createOrUpdateCompanyContactPerson($customer, $customerContact);
+            $contactsEndpoint = app()->make(ContactsEndpoint::class);
+
+            $contact = $contactsEndpoint->get($customer->lexoffice_id);
+
+            if(property_exists($contact, 'company')) {
+                app()->make(ContactsEndpoint::class)->createOrUpdateCompanyContactPerson($customer, $customerContact);
+            }
         }
 
 

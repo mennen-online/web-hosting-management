@@ -2,6 +2,7 @@
 
 namespace App\Nova;
 
+use App\Nova\Actions\Domains\CheckAndRegisterDomain;
 use App\Services\Internetworx\Objects\DomainObject;
 use Armincms\Fields\Chain;
 use Illuminate\Http\Request;
@@ -49,6 +50,7 @@ class Domain extends Resource
     {
         return [
             ID::make(__('ID'), 'id')->sortable(),
+            ID::make(__('Registrar ID'))->readonly(true),
             Text::make(__('Name'), 'name')->readonly(true)
                 ->showOnCreating(false),
             BelongsTo::make(__('User')),
@@ -126,6 +128,8 @@ class Domain extends Resource
      */
     public function actions(Request $request)
     {
-        return [];
+        return [
+            new CheckAndRegisterDomain()
+        ];
     }
 }

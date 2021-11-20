@@ -4,6 +4,7 @@ namespace App\Services\Internetworx\Objects;
 
 use App\Models\Domain;
 use App\Services\Internetworx\Connector;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use INWX\Domrobot;
 
@@ -45,13 +46,19 @@ class DomainObject extends Connector
     public function create(Domain $domain) {
         $customer = $domain->customerProduct->customer;
         $contact = app()->make(ContactObject::class)->searchBy('email', $customer->user->email)->first();
+        if($contact === null) {
+            $contact = app()->make(ContactObject::class)->create($customer->contacts()->first());
+        }
         $domainResource = $this->domrobot->call('domain', 'create', [
             'domain' => $domain->name,
-            'registrant' => $contact['roId'],
-            'admin' => $contact['roId'],
-            'tech' => config('internetworx.default_handle_id'),
-            'billing' => config('internetworx.default_handle_id')
+            'registrant' => $contact instanceof Collection ? $contact['roId'] : $contact,
+            'admin' => $contact instanceof Collection ? $contact['roId'] : $contact,
+            'tech' => config('internetworx.default_handle_id', 1211958),
+            'billing' => config('internetworx.default_handle_id', 1211958)
         ]);
+
+        Log::info(json_encode($domainResource));
+
         $domain->update(['registrar_id' => $domainResource['roId']]);
 
         return $this->processResponse($http_response_header, 'domain');

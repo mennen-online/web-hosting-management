@@ -24,6 +24,6 @@ class CustomerContact extends Model
     ];
 
     public function customer() {
-        return $this->belongsToMany(Customer::class);
+        return $this->belongsTo(Customer::class);
     }
 }

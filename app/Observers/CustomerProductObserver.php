@@ -17,15 +17,17 @@ class CustomerProductObserver
      */
     public function created(CustomerProduct $customerProduct)
     {
-        $product = $customerProduct->product;
+        if($customerProduct->domain) {
+            $product = $customerProduct->product;
 
-        if(class_exists($classname = 'App\\Services\\Product\\Models\\' . Str::kebab($product->name))) {
-            new $classname();
+            if (class_exists($classname = 'App\\Services\\Product\\Models\\'.Str::kebab($product->name))) {
+                new $classname();
+            }
+
+            $invoice = app()->make(InvoicesEndpoint::class)->create($customerProduct);
+
+            $customerProduct->customer->invoices()->create(['lexoffice_id' => $invoice->id]);
         }
-
-        $invoice = app()->make(InvoicesEndpoint::class)->create($customerProduct);
-
-        $customerProduct->customer->invoices()->create(['lexoffice_id' => $invoice->id]);
     }
 
     /**

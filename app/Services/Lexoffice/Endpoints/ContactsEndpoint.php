@@ -116,19 +116,23 @@ class ContactsEndpoint extends Connector
     }
 
     public function createOrUpdateCompanyContactPerson(Customer $customer, CustomerContact $customerContact) {
-        $data = [
-            'company' => [
-                'contactPersons' => [
-                    'salutation' => $customerContact->salutation,
-                    'firstName' => $customerContact->firstName,
-                    'lastName' => $customerContact->lastName,
-                    'primary' => true,
-                    'emailAddress' => $customerContact->email,
-                    'phoneNumber' => $customerContact->phone
-                ]
+        $originalData = $this->get($customer->lexoffice_id);
+
+        if(!property_exists($originalData->company, 'contactPersons')) {
+            $originalData->company->contactPersons = [];
+        }
+
+        $originalData->company->contactPersons = [
+            [
+                'salutation' => $customerContact->salutation,
+                'firstName' => $customerContact->firstName,
+                'lastName' => $customerContact->lastName,
+                'primary' => true,
+                'emailAddress' => $customerContact->email,
+                'phoneNumber' => $customerContact->phone
             ]
         ];
-        return $this->putRequest('/contacts', $customer->lexoffice_id, $data);
+        return $this->putRequest('/contacts', $customer->lexoffice_id, $originalData);
     }
 
     public function createOrUpdateCompanyBillingAddress(Customer $customer, string $supplement, string $streetAndNumber, string $postcode, string $city, string $countryCode) {

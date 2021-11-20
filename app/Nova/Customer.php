@@ -86,6 +86,7 @@ class Customer extends Resource
                     ];
                 }
             }),
+            HasMany::make(__('Customer Contact'), 'contacts'),
             Chain::as('customer_type', function () {
                 return [
                     Select::make(__('Art des Kunden'), 'customer_type')->options([

@@ -8,6 +8,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use INWX\Domrobot;
 
 class Connector
@@ -40,16 +41,27 @@ class Connector
         return $this->domrobot->isOte();
     }
 
-    protected function processResponse($response, string $object): Collection {
+    protected function processResponse($response, string $object): Collection|string {
         $code = Arr::get($response, 'code');
         if(!Arr::has($response, 'resData.' . $object) && !Str::is([1000, 1001], $code)) {
             try {
                 Log::error(json_encode($response));
             }catch(BindingResolutionException $bindingResolutionException) {
+                if($code === 2003) {
+                    throw new ValidationException('Internetworx Validation Error - Please Contact us');
+                }
                 return collect();
             }
         }
 
-        return collect(Arr::get($response, 'resData.'.$object));
+        $result = Arr::get($response, 'resData.'.$object);
+
+        if($result) {
+            if(is_array($result)) {
+                return collect($result);
+            }
+            return $result;
+        }
+        return collect();
     }
 }
