@@ -2,6 +2,9 @@
 
 namespace App\Nova\Actions\Domains;
 
+use App\Models\Domain;
+use App\Notifications\Customer\DomainRegistrationSuccessful;
+use App\Services\Internetworx\Objects\DomainObject;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -22,7 +25,13 @@ class CheckAndRegisterDomain extends Action
      */
     public function handle(ActionFields $fields, Collection $models)
     {
-        //
+        $models->each(function(Domain $domain) {
+            if($domain->customerProduct !== null) {
+                app()->make(DomainObject::class)->create($domain);
+
+                $domain->customerProduct->customer->user->notify(new DomainRegistrationSuccessful($domain));
+            }
+        });
     }
 
     /**
