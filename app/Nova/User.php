@@ -22,7 +22,7 @@ class User extends Resource
      *
      * @var string
      */
-    public static $model = \App\Models\User::class;
+    public static string $model = \App\Models\User::class;
 
     public static $with = ['roles'];
 
@@ -68,18 +68,9 @@ class User extends Resource
             BelongsToMany::make('Roles', 'roles'),
 
             HasOne::make('Customer', 'customer'),
-            $this->mergeWhen(
-                $this->hasCustomerAndRelation('contacts'),
-                HasManyThrough::make('Customer Contacts', 'customerContacts'),
-            ),
-            $this->mergeWhen(
-                $this->hasCustomerAndRelation('invoices'),
-                HasManyThrough::make('Customer Invoices', 'customerInvoices'),
-            ),
-            $this->mergeWhen(
-                $this->hasCustomerAndRelation('products'),
-                HasManyThrough::make('Customer Products', 'customerProducts'),
-            ),
+            HasManyThrough::make('Customer Contacts', 'customerContacts')->showOnCreating(false)->showOnUpdating($this->hasCustomerAndRelation('contacts')),
+            HasManyThrough::make('Customer Invoices', 'customerInvoices')->showOnCreating(false)->showOnUpdating($this->hasCustomerAndRelation('invoices')),
+            HasManyThrough::make('Customer Products', 'customerProducts')->showOnCreating(false)->showOnUpdating($this->hasCustomerAndRelation('products'))
         ];
     }
 

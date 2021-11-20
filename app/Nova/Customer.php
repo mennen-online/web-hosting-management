@@ -40,7 +40,7 @@ class Customer extends Resource
         'id',
     ];
 
-    public static $displayInNavigation = false;
+    //public static $displayInNavigation = false;
 
     /**
      * Get the fields displayed by the resource.
@@ -49,30 +49,34 @@ class Customer extends Resource
      * @return array
      */
     public function fields(Request $request) {
-        if ($this->resource->exists) {
+        $customer = null;
+        if ($this->lexoffice_id !== null) {
             $customer = app()->make(ContactsEndpoint::class)->get($this->lexoffice_id);
-            return [
-                BelongsTo::make(__('User'))->readonly(true),
-                ID::make(__('ID'), 'id')->readonly(true)->showOnIndex(false),
-                Text::make(__('Lexoffice ID'))->readonly(true)->showOnIndex(false),
-                Text::make(__('Kundennummer'), 'customer_number', function() use($customer) {
-                    return $customer->roles->customer->number;
-                })->readonly(),
-                new Panel(__('Billing'), function() use($customer){
+        }
+
+        $fields = [
+            BelongsTo::make(__('User'))->withoutTrashed(),
+            ID::make(__('ID'))->readonly(true)->showOnIndex(false),
+            Text::make(__('Lexoffice ID'))->readonly(true)->showOnIndex(false),
+            Text::make(__('Kundennummer'), 'customer_number', function() use($customer) {
+                return $customer->roles->customer->number;
+            })->showOnCreating(false)->showOnUpdating(is_object($customer) && property_exists($customer, 'roles'))->readonly(true),
+            new Panel(__('Billing'), function() use($customer){
+                if($customer !== null) {
                     return [
-                        Text::make(__('Street & Number'), 'street_number', function() use($customer) {
+                        Text::make(__('Street & Number'), 'street_number', function () use ($customer) {
                             return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->street : '';
                         })->readonly($this->addressCanBeUpdated($customer)),
-                        Text::make(__('Supplement'), 'supplement', function() use($customer) {
+                        Text::make(__('Supplement'), 'supplement', function () use ($customer) {
                             return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->supplement : '';
                         })->readonly($this->addressCanBeUpdated($customer)),
-                        Text::make(__('Postcode'), 'postcode', function() use($customer) {
+                        Text::make(__('Postcode'), 'postcode', function () use ($customer) {
                             return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->zip : '';
                         })->readonly($this->addressCanBeUpdated($customer)),
-                        Text::make(__('City'), 'city', function() use($customer) {
+                        Text::make(__('City'), 'city', function () use ($customer) {
                             return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->city : '';
                         })->readonly($this->addressCanBeUpdated($customer)),
-                        Select::make(__('Country'), 'countryCode', function() use($customer) {
+                        Select::make(__('Country'), 'countryCode', function () use ($customer) {
                             return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->countryCode : '';
                         })->options([
                             'DE' => 'Deutschland',
@@ -80,12 +84,8 @@ class Customer extends Resource
                             'FR' => 'Frankreich'
                         ])->readonly($this->addressCanBeUpdated($customer))
                     ];
-                }),
-            ];
-        }
-
-        return [
-            BelongsTo::make(__('User'))->withoutTrashed()->showCreateRelationButton(true),
+                }
+            }),
             Chain::as('customer_type', function () {
                 return [
                     Select::make(__('Art des Kunden'), 'customer_type')->options([
@@ -93,10 +93,9 @@ class Customer extends Resource
                         'person'  => 'Privatperson'
                     ])
                 ];
-            }),
+            })->showOnUpdating(false)->showOnCreating(true),
             Chain::with('customer_type', function ($request) {
-                $user = \App\Models\User::find($request->viaResourceId);
-                $fields = match ($request->input('customer_type')) {
+                return match ($request->input('customer_type')) {
                     'company' => [
                         Text::make(__('Name des Unternehmens'), 'company.name'),
                         Text::make(__('Steuernummer'), 'taxNumber'),
@@ -108,20 +107,16 @@ class Customer extends Resource
                             'Herr' => 'Herr',
                             'Frau' => 'Frau'
                         ]),
-                        Text::make(__('Vorname'), 'firstName')->withMeta([
-                            'value' => $user->first_name
-                        ]),
-                        Text::make(__('Nachname'), 'lastName')->withMeta([
-                            'value' => $user->last_name
-                        ]),
+                        Text::make(__('Vorname'), 'firstName'),
+                        Text::make(__('Nachname'), 'lastName'),
                         Trix::make(__('Notizen'), 'note')
                     ],
                     null => []
                 };
-
-                return $fields;
-            })
+            })->showOnUpdating(false)->showOnCreating(true)
         ];
+
+        return $fields;
     }
 
     /**
