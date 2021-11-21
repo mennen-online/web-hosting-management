@@ -54,7 +54,9 @@ class CustomerProductObserver
      */
     public function deleted(CustomerProduct $customerProduct)
     {
-        //
+        if($domain = $customerProduct->domain) {
+            $domain->delete();
+        }
     }
 
     /**
@@ -65,7 +67,9 @@ class CustomerProductObserver
      */
     public function restored(CustomerProduct $customerProduct)
     {
-        //
+        if($domain = $customerProduct->domain) {
+            $domain->restore();
+        }
     }
 
     /**
@@ -76,6 +80,8 @@ class CustomerProductObserver
      */
     public function forceDeleted(CustomerProduct $customerProduct)
     {
-        //
+        if($domain = $customerProduct->domain) {
+            $domain->forceDelete();
+        }
     }
 }
