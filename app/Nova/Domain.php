@@ -52,6 +52,7 @@ class Domain extends Resource
     {
         return [
             ID::make(__('ID'), 'id')->sortable(),
+            BelongsTo::make(__('Customer Product'), 'customerProduct')->showOnCreating(false)->showOnUpdating(false)->showOnDetail(true),
             ID::make(__('Registrar ID'))->readonly(true),
             Text::make(__('Name'), 'name')->readonly(true)
                 ->showOnCreating(false),

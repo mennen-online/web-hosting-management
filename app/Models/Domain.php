@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Session;
 
@@ -53,7 +54,12 @@ class Domain extends Model
     }
 
     public function user() {
-        return $this->belongsTo(User::class);
+        return $this->customer()->first()->user();
+    }
+
+    public function customer() {
+        return $this->hasOneThrough( Customer::class, CustomerProduct::class,
+            'domain_id', 'id', 'id', 'customer_id');
     }
 
     public function customerProduct() {
