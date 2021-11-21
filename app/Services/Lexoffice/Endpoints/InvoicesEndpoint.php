@@ -8,6 +8,7 @@ use App\Models\CustomerProduct;
 use App\Services\Internetworx\Objects\DomainObject;
 use App\Services\Lexoffice\Connector;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class InvoicesEndpoint extends Connector
@@ -22,6 +23,7 @@ class InvoicesEndpoint extends Connector
         $response = $this->getRequest('/invoices/' . $customerInvoice->lexoffice_id . '/document');
 
         if(property_exists($response, 'documentFileId')) {
+            Log::info('Lexoffice ID: ' . $customerInvoice->lexoffice_id . ' DFID: ' . $response->documentFileId);
             return app()->make(FilesEndpoint::class)->get($response->documentFileId);
         }
     }

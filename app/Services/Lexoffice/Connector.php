@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use stdClass;
 
 class Connector
 {
@@ -112,13 +113,17 @@ class Connector
         if($this instanceof FilesEndpoint) {
             $contentDisposition = explode('=', $this->response->header('Content-Disposition'));
 
-            dd($this->response);
+            $file = new stdClass();
 
-            Storage::putFileAs(
-                'invoices',
-                '',
-                Arr::last($contentDisposition)
-            );
+            $filename = Arr::last($contentDisposition);
+
+            $filename = Str::replace(';', '', $filename);
+
+            Storage::disk('public')->put('invoices/' . $filename, $this->response->body());
+
+            $file->path = Storage::url('invoices/' . $filename);
+
+            return $file;
         }
 
         return $this->response->object();
