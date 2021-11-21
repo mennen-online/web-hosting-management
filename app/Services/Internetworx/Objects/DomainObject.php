@@ -71,4 +71,20 @@ class DomainObject extends Connector
 
         return $this->processResponse($response, 'domain');
     }
+
+    public function runOut(Domain $domain) {
+        $response = $this->domrobot->call('domain', 'update', [
+            'renewalMode' => 'AUTODELETE'
+        ]);
+
+        return $this->processResponse($response, 'domain');
+    }
+
+    public function renew(Domain $domain) {
+        $response = $this->domrobot->call('domain', 'update', [
+            'renewalMode' => 'AUTORENEW'
+        ]);
+
+        return $this->processResponse($response, 'domain');
+    }
 }

@@ -20,4 +20,16 @@ class DomainObserver
             app()->make(DomainObject::class)->create($domain);
         }
     }
+
+    public function deleted(Domain $domain) {
+        app()->make(DomainObject::class)->runOut($domain);
+    }
+
+    public function restored(Domain $domain) {
+        app()->make(DomainObject::class)->renew($domain);
+    }
+
+    public function forceDeleted(Domain $domain) {
+        app()->make(DomainObject::class)->delete($domain);
+    }
 }
