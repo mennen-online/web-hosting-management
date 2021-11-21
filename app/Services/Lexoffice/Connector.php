@@ -3,15 +3,19 @@
 namespace App\Services\Lexoffice;
 
 use App\Exceptions\LexofficeException;
+use App\Services\Lexoffice\Endpoints\FilesEndpoint;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Connector
 {
     protected const LEXOFFICE_API_URL = 'https://api.lexoffice.io/v1';
+
+    protected array $acceptableStatusCodes = [];
 
     public function __construct(
         protected bool $lexofficeIsAvailable = false,
@@ -52,12 +56,19 @@ class Connector
             $endpoint = '/' . $endpoint;
         }
 
-        $query['page'] = $this->page;
+        if(!$this instanceof FilesEndpoint) {
+            $query['page'] = $this->page;
 
-        $query['size'] = $this->pageSize;
+            $query['size'] = $this->pageSize;
+        }
 
-        $this->response = $this->prepareRequest()
-            ->get(self::LEXOFFICE_API_URL.$endpoint, Arr::query($query));
+        $request = $this->prepareRequest();
+
+        if($this instanceof FilesEndpoint) {
+            $request->withHeaders(['accept' => 'application/pdf']);
+        }
+
+        $this->response = $request->get(self::LEXOFFICE_API_URL.$endpoint, Arr::query($query));
 
         return $this->processResponse();
     }
@@ -93,9 +104,21 @@ class Connector
     }
 
     private function processResponse() : object {
-        if($this->response->status() > 299) {
+        if($this->response->status() > 299 && !in_array($this->response->status(), $this->acceptableStatusCodes)) {
             Log::warning(json_encode($this->response->object()));
             throw new LexofficeException(json_encode($this->response->object()));
+        }
+
+        if($this instanceof FilesEndpoint) {
+            $contentDisposition = explode('=', $this->response->header('Content-Disposition'));
+
+            dd($this->response);
+
+            Storage::putFileAs(
+                'invoices',
+                '',
+                Arr::last($contentDisposition)
+            );
         }
 
         return $this->response->object();

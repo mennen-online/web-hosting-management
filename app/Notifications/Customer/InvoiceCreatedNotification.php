@@ -3,6 +3,7 @@
 namespace App\Notifications\Customer;
 
 use App\Models\CustomerInvoice;
+use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -41,10 +42,13 @@ class InvoiceCreatedNotification extends Notification
      */
     public function toMail($notifiable)
     {
+        $lexofficeInvoice = app()->make(InvoicesEndpoint::class)->get($this->customerInvoice);
+
         return (new MailMessage)
                     ->line('Dear Customer,')
                     ->line("you've got a new Invoice")
-                    ->line('Thank you for using our Service');
+                    ->line('Thank you for using our Service')
+                    ->action('View your Invoice', $invoiceLink);
     }
 
     /**

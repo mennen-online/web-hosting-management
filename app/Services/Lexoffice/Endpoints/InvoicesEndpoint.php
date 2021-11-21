@@ -13,10 +13,16 @@ use Illuminate\Support\Str;
 class InvoicesEndpoint extends Connector
 {
     public function get(CustomerInvoice $customerInvoice) {
-        $response = $this->getRequest('/invoices/' . $customerInvoice->lexoffice_id);
+        return $this->getRequest('/invoices/' . $customerInvoice->lexoffice_id);
+    }
 
-        if($response->ok()) {
-            return $response->object();
+    public function renderInvoice(CustomerInvoice $customerInvoice) {
+        $this->acceptableStatusCodes[] = 406;
+
+        $response = $this->getRequest('/invoices/' . $customerInvoice->lexoffice_id . '/document');
+
+        if(property_exists($response, 'documentFileId')) {
+            return app()->make(FilesEndpoint::class)->get($response->documentFileId);
         }
     }
 

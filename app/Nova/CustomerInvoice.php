@@ -2,11 +2,13 @@
 
 namespace App\Nova;
 
+use App\Nova\Actions\Invoices\DownloadInvoice;
 use App\Nova\Actions\Invoices\OpenInLexoffice;
 use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\Currency;
 use Laravel\Nova\Fields\Date;
 use Laravel\Nova\Fields\ID;
@@ -62,6 +64,7 @@ class CustomerInvoice extends Resource
             }
 
             $fields = [
+                BelongsTo::make(__('Customer')),
                 ID::make(__('ID'), 'id')->sortable(),
                 Text::make('Rechnungsnummer', function () use ($invoice) {
                     return $invoice->voucherNumber;
@@ -167,7 +170,8 @@ class CustomerInvoice extends Resource
      */
     public function actions(Request $request) {
         return [
-            new OpenInLexoffice()
+            new OpenInLexoffice(),
+            new DownloadInvoice()
         ];
     }
 }
