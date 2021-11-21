@@ -59,9 +59,9 @@ class DomainObject extends Connector
 
         Log::info(json_encode($domainResource));
 
-        $domain->update(['registrar_id' => $domainResource['roId']]);
+        $domain->update(['registrar_id' => $domainResource['resData']['roId']]);
 
-        return $this->processResponse($http_response_header, 'domain');
+        return $this->processResponse($domainResource, 'domain');
     }
 
     public function delete(Domain|string $domain) {

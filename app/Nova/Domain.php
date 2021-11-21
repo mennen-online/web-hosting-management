@@ -40,6 +40,8 @@ class Domain extends Resource
         'id', 'name'
     ];
 
+    public static $displayInNavigation = false;
+
     /**
      * Get the fields displayed by the resource.
      *

@@ -6,6 +6,7 @@ use App\Models\CustomerProduct;
 use App\Services\Internetworx\Objects\DomainObject;
 use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use Illuminate\Support\Str;
+use Log;
 
 class CustomerProductObserver
 {
@@ -23,6 +24,10 @@ class CustomerProductObserver
             if (class_exists($classname = 'App\\Services\\Product\\Models\\'.Str::kebab($product->name))) {
                 new $classname();
             }
+
+            $domain = $customerProduct->domain;
+
+            app()->make(DomainObject::class)->create($domain);
 
             $invoice = app()->make(InvoicesEndpoint::class)->create($customerProduct);
 

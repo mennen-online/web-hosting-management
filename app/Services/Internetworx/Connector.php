@@ -45,6 +45,8 @@ class Connector
         $code = Arr::get($response, 'code');
         if(!Arr::has($response, 'resData.' . $object) && !Str::is([1000, 1001], $code)) {
             try {
+                Log::error('Internetworx Error');
+                Log::error($code);
                 Log::error(json_encode($response));
             }catch(BindingResolutionException $bindingResolutionException) {
                 if($code === 2003) {
