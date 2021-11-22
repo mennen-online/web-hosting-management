@@ -24,6 +24,27 @@ class CustomerProduct extends Model
 
     protected static function boot() {
         parent::boot();
+
+        self::creating(function(CustomerProduct $customerProduct) {
+            if($customerProduct->product_id === null) {
+                $domain = Domain::find($customerProduct->domain_id);
+
+                $domainName = explode('.', $domain->name);
+                if (count($domainName) > 2) {
+                    $tld = $domainName[1].'.'.$domainName[2];
+                } else {
+                    $tld = $domainName[1];
+                }
+
+                $product = Product::where('name', $tld)->first();
+
+                CustomerProduct::create([
+                    'customer_id' => $customerProduct->customer_id,
+                    'product_id'  => $product->id,
+                    'domain_id'   => $customerProduct->domain_id
+                ]);
+            }
+        });
     }
 
     public function customer() {

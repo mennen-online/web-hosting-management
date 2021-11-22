@@ -56,7 +56,6 @@ class Domain extends Resource
             ID::make(__('Registrar ID'))->readonly(true),
             Text::make(__('Name'), 'name')->readonly(true)
                 ->showOnCreating(false),
-            BelongsTo::make(__('User')),
             Chain::as('domainname', function() {
                 return [
                     Text::make(__('Name'), 'name')->readonly($this->resource->exists),

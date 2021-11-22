@@ -42,13 +42,13 @@ class InvoiceCreatedNotification extends Notification
      */
     public function toMail($notifiable)
     {
-        $lexofficeInvoice = app()->make(InvoicesEndpoint::class)->get($this->customerInvoice);
+        $lexofficeInvoice = app()->make(InvoicesEndpoint::class)->renderInvoice($this->customerInvoice);
 
         return (new MailMessage)
                     ->line('Dear Customer,')
                     ->line("you've got a new Invoice")
                     ->line('Thank you for using our Service')
-                    ->action('View your Invoice', $invoiceLink);
+                    ->action('View your Invoice', $lexofficeInvoice->path);
     }
 
     /**

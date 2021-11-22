@@ -86,8 +86,9 @@ class Customer extends Resource
                     ];
                 }
             }),
-            HasMany::make(__('Customer Contact'), 'contacts'),
-            HasMany::make(__('Customer Invoices'), 'invoices'),
+            HasMany::make(__('Customer Contact'), 'contacts')->showOnCreating(false),
+            HasMany::make(__('Customer Invoices'), 'invoices')->showOnCreating(false),
+            HasMany::make(__('Customer Products'), 'products')->showOnCreating(false),
             Chain::as('customer_type', function () {
                 return [
                     Select::make(__('Art des Kunden'), 'customer_type')->options([

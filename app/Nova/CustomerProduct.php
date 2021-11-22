@@ -3,6 +3,7 @@
 namespace App\Nova;
 
 use App\Models\Domain;
+use App\Nova\Actions\CustomerProduct\InstallCustomerProduct;
 use App\Services\Forge\Endpoints\ServersEndpoint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -93,7 +94,9 @@ class CustomerProduct extends Resource
      */
     public function actions(Request $request)
     {
-        return [];
+        return [
+            new InstallCustomerProduct()
+        ];
     }
 
     public static function relatableProducts(NovaRequest $request, $query) {
