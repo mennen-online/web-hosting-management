@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class CreateSite implements ShouldQueue
@@ -35,6 +36,7 @@ class CreateSite implements ShouldQueue
      */
     public function handle()
     {
+        Log::info('Create Site using Forge API');
         $site = app()->make(SitesEndpoint::class)->create($this->customerProduct->server, $this->customerProduct->domain, [
             'project_type' => 'php',
             'directory' => '/'.Str::snake($this->customerProduct->domain->name),
@@ -42,6 +44,8 @@ class CreateSite implements ShouldQueue
             'database' => Str::slug($this->customerProduct->domain->name),
             'php_version' => 'php74'
         ]);
+
+        Log::info('Site Creation Response:' . json_encode($site));
 
         CreateWordPressInstance::dispatch($this->customerProduct->server, $site->site->id);
     }

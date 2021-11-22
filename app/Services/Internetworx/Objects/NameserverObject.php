@@ -6,6 +6,7 @@ use App\Models\Domain;
 use App\Models\Server;
 use App\Services\Forge\Endpoints\ServersEndpoint;
 use App\Services\Internetworx\Connector;
+use Illuminate\Support\Facades\Log;
 
 class NameserverObject extends Connector
 {
@@ -21,6 +22,8 @@ class NameserverObject extends Connector
             ],
             'masterIp' => $serverInformation->server->ip_address
         ]);
+        Log::info('Nameserver Creation for Domain ' . $domain->name .' - Response:');
+        Log::info(json_encode($response));
 
         return $this->processResponse($response, 'nameserver');
     }

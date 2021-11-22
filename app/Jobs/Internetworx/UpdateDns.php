@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class UpdateDns implements ShouldQueue
 {
@@ -33,6 +34,7 @@ class UpdateDns implements ShouldQueue
      */
     public function handle()
     {
+        Log::info('Update Domain Object => Creating Nameserver');
         $nameserver = app()->make(NameserverObject::class);
 
         $nameserver->create($this->domain, $this->server);

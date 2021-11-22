@@ -14,6 +14,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class CreateServer implements ShouldQueue
 {
@@ -41,6 +42,7 @@ class CreateServer implements ShouldQueue
         $region = collect($regions)->first();
         $sizes = collect($region->sizes);
         $size = $sizes->first();
+        Log::info('Request Server Creation at Hetzner Cloud');
         $serverObject = app()->make(ServersEndpoint::class)->create([
             'provider' => 'hetzner',
             'name' => $this->customerProduct->domain->name,
@@ -51,6 +53,8 @@ class CreateServer implements ShouldQueue
             'php_version' => 'php74',
             'database_type' => 'mysql8'
         ]);
+        Log::info('Server Created');
+        Log::info(json_encode($serverObject));
 
         $server = Server::create([
             'forge_id' => $serverObject->server->id

@@ -2,6 +2,7 @@
 
 namespace App\Nova\Actions\CustomerProduct;
 
+use App\Services\Product\ProductService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -25,9 +26,8 @@ class InstallCustomerProduct extends Action
     {
         foreach($models as $model) {
             $product = $model->product;
-            if(class_exists($classname = 'App\\Services\\Product\\Models\\' . Str::kebab($product->name))) {
-                new $classname();
-            }
+            $productService = new ProductService($product);
+            $productService->install();
         }
     }
 
