@@ -69,7 +69,7 @@ class DomainObject extends Connector
         Log::info(json_encode($domainResource));
 
         if(!Arr::has($domainResource, 'resData') && Arr::get($domainResource, 'code') === 2302) {
-            return $this->get($domain->name);
+            return $this->get($domain);
         }
 
         return $domainResource['resData'];
