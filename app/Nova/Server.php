@@ -3,6 +3,7 @@
 namespace App\Nova;
 
 use App\Services\Forge\Endpoints\ServersEndpoint;
+use Laravel\Nova\Fields\BelongsToMany;
 use Laravel\Nova\Fields\Text;
 use Illuminate\Http\Request;
 use Laravel\Nova\Fields\ID;
@@ -40,29 +41,30 @@ class Server extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function fields(Request $request)
-    {
+    public function fields(Request $request) {
         $serversEndpoint = app()->make(ServersEndpoint::class);
 
         $server = $serversEndpoint->get($this->resource);
 
-        if($server !== null) {
+        if ($server !== null && property_exists($server, 'server')) {
             $server = $server->server;
         }
 
         return [
             ID::make(__('ID'), 'id')->sortable(),
-            Text::make(__('Name'), function() use($server) {
+            BelongsToMany::make(__('Product'), 'customerProduct'),
+            Text::make(__('Name'), function () use ($server) {
                 return $server->name;
             }),
-            Text::make(__('IP Address'), function() use($server) {
-                return $server->ip_address;
+            Text::make(__('IP Address'), function () use ($server) {
+                return property_exists($server, 'ip_address') ? $server->ip_address : '';
             }),
-            Trix::make(__('PHP Versions'), function() use($server) {
+            Trix::make(__('PHP Versions'), function () use ($server) {
                 $output = "";
-
-                foreach($server->php_versions as $php_version) {
-                    $output .= $php_version->displayable_version . '<br/>';
+                if (property_exists($server, 'php_versions')) {
+                    foreach ($server->php_versions as $php_version) {
+                        $output .= $php_version->displayable_version.'<br/>';
+                    }
                 }
 
                 return $output;
@@ -76,8 +78,7 @@ class Server extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function cards(Request $request)
-    {
+    public function cards(Request $request) {
         return [];
     }
 
@@ -87,8 +88,7 @@ class Server extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function filters(Request $request)
-    {
+    public function filters(Request $request) {
         return [];
     }
 
@@ -98,8 +98,7 @@ class Server extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function lenses(Request $request)
-    {
+    public function lenses(Request $request) {
         return [];
     }
 
@@ -109,8 +108,7 @@ class Server extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function actions(Request $request)
-    {
+    public function actions(Request $request) {
         return [];
     }
 }
