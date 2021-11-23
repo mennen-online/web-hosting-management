@@ -10,6 +10,18 @@ use Illuminate\Support\Facades\Log;
 
 class NameserverObject extends Connector
 {
+    public function info(Domain $domain) {
+        $response = $this->domrobot->call('nameserver', 'info', [
+            'domain' => $domain->name
+        ]);
+
+        if($response['code'] === 2303) {
+            return $this->create($domain, $domain->customerProduct->server);
+        }
+
+        return $response['resData'];
+    }
+
     public function create(Domain $domain, Server $server) {
         $serverInformation = app()->make(ServersEndpoint::class)->get($server);
         $response = $this->domrobot->call('nameserver', 'create', [
@@ -20,11 +32,11 @@ class NameserverObject extends Connector
                 'ns2.inwx.de',
                 'ns3.inwx.eu'
             ],
-            'masterIp' => $serverInformation->server->ip_address
+            'web' => $serverInformation->server->ip_address
         ]);
         Log::info('Nameserver Creation for Domain ' . $domain->name .' - Response:');
         Log::info(json_encode($response));
 
-        return $this->processResponse($response, 'nameserver');
+        return $response;
     }
 }

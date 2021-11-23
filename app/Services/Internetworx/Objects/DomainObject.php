@@ -47,13 +47,16 @@ class DomainObject extends Connector
     }
 
     public function setDefaultNameserver(Domain $domain) {
-        $this->domrobot->call('domain', 'update', [
+        $response = $this->domrobot->call('domain', 'update', [
+            'domain' => $domain->name,
             'ns' => [
                 'ns.inwx.de',
                 'ns2.inwx.de',
                 'ns3.inwx.eu'
             ],
         ]);
+
+        Log::info(json_encode($response));
     }
 
     public function indexPrice() {

@@ -5,6 +5,7 @@ namespace Tests\Feature\Internetworx;
 use App\Models\Domain;
 use App\Models\Product;
 use App\Models\CustomerProduct;
+use App\Services\Forge\Endpoints\ServersEndpoint;
 use App\Services\Internetworx\Objects\DomainObject;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;

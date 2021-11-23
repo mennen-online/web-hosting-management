@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Internetworx;
 
+use App\Jobs\Forge\CreateServer;
 use App\Models\Domain;
 use App\Models\Server;
 use App\Services\Internetworx\Objects\DomainObject;

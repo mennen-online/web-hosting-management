@@ -25,8 +25,12 @@ class WordPress
         protected SitesEndpoint $sitesEndpoint,
         protected WordPressEndpoint $wordPressEndpoint
     ) {
+        if($this->customerProduct->server === null) {
+            CreateServer::dispatchSync($this->customerProduct);
+            $this->customerProduct->refresh();
+        }
         CreateServer::withChain([
-            (new UpdateDns($this->customerProduct->domain, $this->customerProduct->server))->delay(now()->addMinutes(1)),
+            (new UpdateDns($this->customerProduct->domain, $this->customerProduct->server))->delay(now()->addMinutes(10)),
             (new CreateSite($this->customerProduct))->delay(now()->addMinutes(20))
         ])->dispatch($this->customerProduct);
     }
