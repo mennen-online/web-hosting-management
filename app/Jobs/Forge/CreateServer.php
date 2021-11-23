@@ -63,6 +63,6 @@ class CreateServer implements ShouldQueue
 
         $this->customerProduct->update(['server_id' => $server->id]);
 
-        UpdateDns::dispatch($this->customerProduct->domain, $server);
+        UpdateDns::dispatchSync($this->customerProduct->domain, $server);
     }
 }
