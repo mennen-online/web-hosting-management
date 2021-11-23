@@ -49,7 +49,7 @@ class CreateSite implements ShouldQueue
             'username' => Str::slug($this->customerProduct->domain->name),
             'database' => Str::slug($this->customerProduct->domain->name),
             'php_version' => 'php74'
-        ]);
+        ])->object()->site;
 
         Log::info('Site Creation Response:' . json_encode($site));
 

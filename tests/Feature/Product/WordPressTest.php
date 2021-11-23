@@ -38,11 +38,9 @@ class WordPressTest extends TestCase
     }
 
     public function testProductInstallerQueuesJobs() {
-        $customerProduct = null;
+        Queue::fake();
 
-        QueueFake::wrap(function() use(&$customerProduct) {
-            $customerProduct = CustomerProduct::factory()->for($this->product)->create();
-        });
+        $customerProduct = CustomerProduct::factory()->for($this->product)->create();
 
         $productService = new ProductService($this->product, customerProduct: $customerProduct);
 
@@ -50,7 +48,10 @@ class WordPressTest extends TestCase
 
         $this->assertSame(WordPress::class, $productService->getProductCallName());
 
+        Queue::assertNothingPushed();
         CreateServer::dispatch($customerProduct);
+        Queue::assertPushed(CreateServer::class);
         CreateSite::dispatch($customerProduct)->delay(now()->addMinutes(20));
+        Queue::assertPushed(CreateSite::class);
     }
 }
