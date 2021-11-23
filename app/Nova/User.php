@@ -68,9 +68,6 @@ class User extends Resource
             BelongsToMany::make('Roles', 'roles'),
 
             HasOne::make('Customer', 'customer'),
-            HasManyThrough::make('Customer Contacts', 'customerContacts')->showOnCreating(false)->showOnUpdating($this->hasCustomerAndRelation('contacts')),
-            HasManyThrough::make('Customer Invoices', 'customerInvoices')->showOnCreating(false)->showOnUpdating($this->hasCustomerAndRelation('invoices')),
-            HasManyThrough::make('Customer Products', 'customerProducts')->showOnCreating(false)->showOnUpdating($this->hasCustomerAndRelation('products'))
         ];
     }
 
