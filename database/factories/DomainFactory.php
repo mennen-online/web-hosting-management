@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Domain;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 class DomainFactory extends Factory
 {
@@ -22,7 +23,7 @@ class DomainFactory extends Factory
     public function definition()
     {
         return [
-            'name' => 'meinetest-domain.de'
+            'name' => Str::random().'.de'
         ];
     }
 }

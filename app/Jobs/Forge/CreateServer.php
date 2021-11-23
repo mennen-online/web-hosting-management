@@ -37,9 +37,10 @@ class CreateServer implements ShouldQueue
      */
     public function handle()
     {
-        $credentials = app()->make(CredentialsEndpoint::class)->index();
-        $regions = app()->make(RegionsEndpoint::class)->index()->hetzner;
-        $region = collect($regions)->first();
+        $credentials = app()->make(CredentialsEndpoint::class)->index()->credentials;
+        $regions = app()->make(RegionsEndpoint::class)->index();
+        $hetznerRegions = collect($regions->regions->hetzner);
+        $region = collect($hetznerRegions)->first();
         $sizes = collect($region->sizes);
         $size = $sizes->first();
         Log::info('Request Server Creation at Hetzner Cloud');

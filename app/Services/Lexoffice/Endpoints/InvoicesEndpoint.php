@@ -73,7 +73,7 @@ class InvoicesEndpoint extends Connector
                 'unitName' => 'Jahr',
                 'unitPrice' => [
                     'currency' => 'EUR',
-                    'netAmount' => number_format($domainPrice[$domain->name]['price'], 2),
+                    'netAmount' => number_format($domainPrice->first()['price'], 2),
                     'taxRatePercentage' => 19
                 ]
             ], [

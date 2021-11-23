@@ -27,6 +27,6 @@ class WordPress
     ) {
         CreateServer::withChain([
             CreateSite::dispatch($this->customerProduct)->delay(now()->addMinutes(20))
-        ])->dispatch();
+        ])->dispatch($this->customerProduct);
     }
 }

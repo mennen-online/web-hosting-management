@@ -24,6 +24,7 @@
         "fakerphp/faker": "^1.9.1",
         "mockery/mockery": "^1.4.2",
         "nunomaduro/collision": "^5.0",
+        "ohseesoftware/laravel-queue-fake": "^1.1",
         "phpunit/phpunit": "^9.3.3"
     },
     "autoload": {

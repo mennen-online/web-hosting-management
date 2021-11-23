@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Server;
+use App\Services\Forge\Endpoints\ServersEndpoint;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ServerFactory extends Factory
@@ -22,7 +23,7 @@ class ServerFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'forge_id' => app()->make(ServersEndpoint::class)->create()->server->id
         ];
     }
 }

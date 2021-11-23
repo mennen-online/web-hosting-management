@@ -48,9 +48,9 @@ class ContactObject extends Connector
             $params['org'] = $contactObject->company->name;
         }
 
-        if(property_exists($contactObject->addresses, 'billing')) {
+        if (property_exists($contactObject->addresses, 'billing')) {
             $address = Arr::first($contactObject->addresses->billing);
-        }elseif(property_exists($contactObject->addresses, 'shipping')) {
+        } elseif (property_exists($contactObject->addresses, 'shipping')) {
             $address = Arr::first($contactObject->addresses->shipping);
         }
 

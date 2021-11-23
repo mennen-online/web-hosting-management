@@ -11,6 +11,7 @@ class Customer extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id',
         'lexoffice_id',
         'user_id',
         'company'
@@ -29,10 +30,12 @@ class Customer extends Model
         parent::boot();
 
         self::creating(function(Customer $customer) {
-            $customer->lexoffice_id = match($customer->customer_type) {
-                'company' => app()->make(ContactsEndpoint::class)->createCompanyContact($customer)->id,
-                'person' => app()->make(ContactsEndpoint::class)->createPersonContact($customer)->id
-            };
+            if($customer->customer_type) {
+                $customer->lexoffice_id = match ($customer->customer_type) {
+                    'company' => app()->make(ContactsEndpoint::class)->createCompanyContact($customer)->id,
+                    'person' => app()->make(ContactsEndpoint::class)->createPersonContact($customer)->id,
+                };
+            }
 
             if($customer->customer_type === 'company') {
                 $customer->company = [
@@ -43,10 +46,12 @@ class Customer extends Model
                 ];
             }
 
-            $fillableFields = $customer->getFillable();
-            foreach($customer->attributes as $attribute => $value) {
-                if(!in_array($attribute, $fillableFields)) {
-                    unset($customer->attributes[$attribute]);
+            if(isset($customer->customer_type)) {
+                $fillableFields = $customer->getFillable();
+                foreach ($customer->attributes as $attribute => $value) {
+                    if (!in_array($attribute, $fillableFields)) {
+                        unset($customer->attributes[$attribute]);
+                    }
                 }
             }
         });

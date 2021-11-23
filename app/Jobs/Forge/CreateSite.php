@@ -12,6 +12,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 class CreateSite implements ShouldQueue
 {
@@ -36,6 +37,11 @@ class CreateSite implements ShouldQueue
      */
     public function handle()
     {
+        if($this->customerProduct->server === null) {
+            $this->fail([
+                new InvalidArgumentException('No Server available')
+            ]);
+        }
         Log::info('Create Site using Forge API');
         $site = app()->make(SitesEndpoint::class)->create($this->customerProduct->server, $this->customerProduct->domain, [
             'project_type' => 'php',
