@@ -26,7 +26,7 @@ class InstallCustomerProduct extends Action
     {
         foreach($models as $model) {
             $product = $model->product;
-            $productService = new ProductService($product, $model, $model);
+            $productService = new ProductService($product, $model);
             $productService->install();
         }
     }

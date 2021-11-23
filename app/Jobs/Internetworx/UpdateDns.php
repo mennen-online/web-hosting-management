@@ -3,6 +3,7 @@
 namespace App\Jobs\Internetworx;
 
 use App\Jobs\Forge\CreateServer;
+use App\Models\CustomerProduct;
 use App\Models\Domain;
 use App\Models\Server;
 use App\Services\Internetworx\Objects\DomainObject;
@@ -24,7 +25,7 @@ class UpdateDns implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(protected Domain $domain, protected Server $server)
+    public function __construct(protected CustomerProduct $customerProduct)
     {
         //
     }
@@ -36,16 +37,11 @@ class UpdateDns implements ShouldQueue
      */
     public function handle()
     {
-        $this->domain->refresh();
-
-        $this->server->refresh();
-
-
         Log::info('Update Domain Object => Creating Nameserver');
         $domain = app()->make(DomainObject::class);
         $nameserver = app()->make(NameserverObject::class);
 
-        $domain->setDefaultNameserver($this->domain);
-        $nameserver->create($this->domain, $this->server);
+        $domain->setDefaultNameserver($this->customerProduct->domain);
+        $nameserver->create($this->customerProduct->domain, $this->customerProduct->server);
     }
 }
