@@ -4,6 +4,7 @@ namespace App\Jobs\Internetworx;
 
 use App\Models\Domain;
 use App\Models\Server;
+use App\Services\Internetworx\Objects\DomainObject;
 use App\Services\Internetworx\Objects\NameserverObject;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -34,9 +35,16 @@ class UpdateDns implements ShouldQueue
      */
     public function handle()
     {
+        $this->domain->refresh();
+
+        $this->server->refresh();
+
+
         Log::info('Update Domain Object => Creating Nameserver');
+        $domain = app()->make(DomainObject::class);
         $nameserver = app()->make(NameserverObject::class);
 
+        $domain->setDefaultNameserver($this->domain);
         $nameserver->create($this->domain, $this->server);
     }
 }

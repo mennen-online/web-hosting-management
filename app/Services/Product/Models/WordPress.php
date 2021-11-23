@@ -26,7 +26,8 @@ class WordPress
         protected WordPressEndpoint $wordPressEndpoint
     ) {
         CreateServer::withChain([
-            CreateSite::dispatch($this->customerProduct)->delay(now()->addMinutes(20))
+            (new UpdateDns($this->customerProduct->domain, $this->customerProduct->server))->delay(now()->addMinutes(1)),
+            (new CreateSite($this->customerProduct))->delay(now()->addMinutes(20))
         ])->dispatch($this->customerProduct);
     }
 }

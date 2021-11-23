@@ -42,7 +42,7 @@ class WordPressTest extends TestCase
 
         $customerProduct = CustomerProduct::factory()->for($this->product)->create();
 
-        $productService = new ProductService($this->product, customerProduct: $customerProduct);
+        $productService = new ProductService($this->product, customerProduct: $customerProduct, className: $customerProduct);
 
         $this->assertTrue($productService->productExists());
 

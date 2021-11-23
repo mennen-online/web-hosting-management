@@ -3,6 +3,7 @@
 namespace App\Nova;
 
 use App\Nova\Actions\Domains\CheckAndRegisterDomain;
+use App\Nova\Actions\UpdateDomainDNS;
 use App\Services\Internetworx\Objects\DomainObject;
 use Armincms\Fields\Chain;
 use Illuminate\Http\Request;
@@ -131,7 +132,8 @@ class Domain extends Resource
     public function actions(Request $request)
     {
         return [
-            new CheckAndRegisterDomain()
+            new CheckAndRegisterDomain(),
+            new UpdateDomainDNS()
         ];
     }
 }

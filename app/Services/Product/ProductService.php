@@ -14,9 +14,9 @@ class ProductService
 {
     public function __construct(
         protected Product $product,
+        protected CustomerProduct $customerProduct,
         protected string $className = "",
-        protected bool $exists = false,
-        protected CustomerProduct $customerProduct
+        protected bool $exists = false
 
     ) {
         $this->className = 'App\\Services\\Product\\Models\\' . Str::ucfirst(Str::camel($this->product->name));

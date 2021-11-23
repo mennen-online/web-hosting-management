@@ -1,17 +1,19 @@
 <?php
 
-namespace App\Nova\Actions\CustomerProduct;
+namespace App\Nova\Actions;
 
-use App\Services\Product\ProductService;
+use App\Models\Server;
+use App\Services\Internetworx\Objects\NameserverObject;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use Laravel\Nova\Actions\Action;
 use Laravel\Nova\Fields\ActionFields;
+use Laravel\Nova\Fields\HasOne;
+use Laravel\Nova\Fields\Select;
 
-class InstallCustomerProduct extends Action
+class UpdateDomainDNS extends Action
 {
     use InteractsWithQueue, Queueable;
 
@@ -24,10 +26,10 @@ class InstallCustomerProduct extends Action
      */
     public function handle(ActionFields $fields, Collection $models)
     {
+        $dnsObject = app()->make(NameserverObject::class);
+        $server = Server::find($fields->get('server_id'));
         foreach($models as $model) {
-            $product = $model->product;
-            $productService = new ProductService($product, $model, $model);
-            $productService->install();
+            $dnsObject->create($model, $server);
         }
     }
 
@@ -38,6 +40,12 @@ class InstallCustomerProduct extends Action
      */
     public function fields()
     {
-        return [];
+        return [
+            Select::make(__('Server'), 'server_id')->options(Server::all()->map(function(Server $server) {
+                return [
+                    $server->id => $server->name
+                ];
+            }))->displayUsingLabels()
+        ];
     }
 }

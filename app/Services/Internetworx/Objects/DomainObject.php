@@ -46,6 +46,16 @@ class DomainObject extends Connector
         return $this->processResponse($response, 'domain');
     }
 
+    public function setDefaultNameserver(Domain $domain) {
+        $this->domrobot->call('domain', 'update', [
+            'ns' => [
+                'ns.inwx.de',
+                'ns2.inwx.de',
+                'ns3.inwx.eu'
+            ],
+        ]);
+    }
+
     public function indexPrice() {
         $response = $this->domrobot->call('domain', 'getPrices');
 
