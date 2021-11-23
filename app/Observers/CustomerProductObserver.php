@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\CustomerProduct;
+use App\Models\Domain;
 use App\Services\Internetworx\Objects\DomainObject;
 use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use Illuminate\Support\Str;
@@ -27,7 +28,16 @@ class CustomerProductObserver
 
             $domain = $customerProduct->domain;
 
-            app()->make(DomainObject::class)->create($domain);
+            $domainInfo = app()->make(DomainObject::class)->create($domain);
+
+            $domain->update(['registrar_id' => $domainInfo['roId']]);
+
+            $domain->refresh();
+
+            if($domain->registrar_id === null) {
+                $domainInfo = app()->make(DomainObject::class)->get($domain);
+                $domain->update(['registrar_id' => $domainInfo['roId']]);
+            }
 
             $invoice = app()->make(InvoicesEndpoint::class)->create($customerProduct);
 

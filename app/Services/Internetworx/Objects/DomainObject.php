@@ -4,6 +4,7 @@ namespace App\Services\Internetworx\Objects;
 
 use App\Models\Domain;
 use App\Services\Internetworx\Connector;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use INWX\Domrobot;
@@ -17,6 +18,14 @@ class DomainObject extends Connector
         ]);
 
         return $this->processResponse($response, 'domain');
+    }
+
+    public function get(Domain $domain) {
+        $response = $this->domrobot->call('domain', 'info', [
+            'domain' => $domain->name
+        ]);
+
+        return $response['resData'];
     }
 
     public function check(string $domain) {
@@ -59,9 +68,7 @@ class DomainObject extends Connector
 
         Log::info(json_encode($domainResource));
 
-        $domain->update(['registrar_id' => $domainResource['resData']['roId']]);
-
-        return $this->processResponse($domainResource, 'domain');
+        return $domainResource['resData'];
     }
 
     public function delete(Domain|string $domain) {
