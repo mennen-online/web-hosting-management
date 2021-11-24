@@ -4,6 +4,7 @@ namespace App\Nova;
 
 use App\Services\Forge\Endpoints\ServersEndpoint;
 use Laravel\Nova\Fields\BelongsToMany;
+use Laravel\Nova\Fields\HasMany;
 use Laravel\Nova\Fields\Text;
 use Illuminate\Http\Request;
 use Laravel\Nova\Fields\ID;
@@ -24,7 +25,7 @@ class Server extends Resource
      *
      * @var string
      */
-    public static $title = 'name';
+    public static $title = 'id';
 
     /**
      * The columns that should be searched.
@@ -52,7 +53,7 @@ class Server extends Resource
 
         return [
             ID::make(__('ID'), 'id')->sortable(),
-            BelongsToMany::make(__('Product'), 'customerProduct'),
+            HasMany::make(__('Customer Products'), 'customerProduct'),
             Text::make(__('Name'), function () use ($server) {
                 return $server->name;
             }),

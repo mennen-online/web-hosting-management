@@ -50,7 +50,7 @@ class CustomerProduct extends Resource
             BelongsTo::make(__('Customer')),
             BelongsTo::make(__('Product')),
             BelongsTo::make(__('Domain'))->showCreateRelationButton(),
-            BelongsTo::make(__('Server'))
+            BelongsTo::make(__('Server'))->showOnCreating(false)
         ];
     }
 

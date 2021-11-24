@@ -3,6 +3,7 @@
 namespace App\Nova\Actions;
 
 use App\Models\Server;
+use App\Services\Forge\Endpoints\ServersEndpoint;
 use App\Services\Internetworx\Objects\NameserverObject;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -40,12 +41,15 @@ class UpdateDomainDNS extends Action
      */
     public function fields()
     {
+        $serverEndpoint = app()->make(ServersEndpoint::class);
         return [
-            Select::make(__('Server'), 'server_id')->options(Server::all()->map(function(Server $server) {
+            Select::make(__('Server'), 'server_id')->options(Server::all()->map(function(Server $server) use($serverEndpoint) {
+                $serverInfo = $serverEndpoint->get($server);
                 return [
-                    $server->id => $server->name
+                    'label' => $serverInfo->server->name,
+                    'value' => $server->id
                 ];
-            }))->displayUsingLabels()
+            })->toArray())->displayUsingLabels()
         ];
     }
 }
