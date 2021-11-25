@@ -23,7 +23,9 @@ class Server extends Model
         parent::boot();
 
         self::creating(function(Server $server){
-            $server->forge_id = app()->make(ServersEndpoint::class)->create()->server->id;
+            if($server->forge_id === null) {
+                $server->forge_id = app()->make(ServersEndpoint::class)->create()->server->id;
+            }
         });
     }
 
