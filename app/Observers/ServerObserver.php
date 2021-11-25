@@ -2,8 +2,10 @@
 
 namespace App\Observers;
 
+use App\Models\CustomerProduct;
 use App\Models\Server;
 use App\Services\Forge\Endpoints\ServersEndpoint;
+use Illuminate\Support\Facades\Log;
 
 class ServerObserver
 {
@@ -37,6 +39,8 @@ class ServerObserver
      */
     public function deleted(Server $server)
     {
+        Log::info('Update Customer Products using Server ' . $server->id . ' to server_id = null');
+        CustomerProduct::where('server_id', $server->id)->update(['server_id' => null]);
         app()->make(ServersEndpoint::class)->delete($server);
     }
 
