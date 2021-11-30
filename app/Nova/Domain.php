@@ -14,7 +14,7 @@ use Laravel\Nova\Fields\Currency;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Http\Requests\NovaRequest;
-use Str;
+use Illuminate\Support\Str;
 
 class Domain extends Resource
 {

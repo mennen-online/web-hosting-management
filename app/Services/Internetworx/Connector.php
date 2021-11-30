@@ -3,7 +3,7 @@
 namespace App\Services\Internetworx;
 
 use App\Exceptions\InternetworxException;
-use Arr;
+use Illuminate\Support\Arr;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
