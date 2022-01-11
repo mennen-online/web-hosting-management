@@ -11,6 +11,8 @@ use Illuminate\Support\Arr;
 class ContactObject extends Connector
 {
     public function index(int $page = 1, int $pageLimit = 250, ?int $id = null) {
+        $this->prepareRequest();
+
         $params = [
             'page' => $page,
             'pagelimit' => $pageLimit
@@ -26,6 +28,8 @@ class ContactObject extends Connector
     }
 
     public function searchBy(string $field, string $value) {
+        $this->prepareRequest();
+
         $contacts = $this->processResponse($this->index(1, 5000), 'contact');
 
         return collect($contacts)->filter(function($contact) use($field, $value) {
@@ -36,6 +40,8 @@ class ContactObject extends Connector
     }
 
     public function create(CustomerContact $contact) {
+        $this->prepareRequest();
+
         $params = [];
 
         $contactObject = app()->make(ContactsEndpoint::class)->get($contact->customer->lexoffice_id);
@@ -85,6 +91,8 @@ class ContactObject extends Connector
     }
 
     public function delete(Customer|int $customer) {
+        $this->prepareRequest();
+
         if($customer instanceof Customer) {
             $response = $this->domrobot->call('contact', 'delete', [
                 'id' => $customer->user->id

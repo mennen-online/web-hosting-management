@@ -14,6 +14,7 @@ class CustomerContact extends Model
         'salutation',
         'first_name',
         'last_name',
+        'primary',
         'email',
         'phone'
     ];
@@ -21,6 +22,10 @@ class CustomerContact extends Model
     protected $dates = [
         'created_at',
         'updated_at'
+    ];
+
+    protected $casts = [
+        'primary' => 'boolean'
     ];
 
     public function customer() {

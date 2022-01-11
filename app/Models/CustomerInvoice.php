@@ -12,6 +12,9 @@ class CustomerInvoice extends Model
 
     protected $fillable = [
         'lexoffice_id',
+        'totalTaxAmount',
+        'totalGrossAmount',
+        'totalNetAmount',
         'customer_id'
     ];
 
@@ -20,11 +23,21 @@ class CustomerInvoice extends Model
         'updated_at'
     ];
 
+    protected $casts = [
+        'totalTaxAmount' => 'double',
+        'totalGrossAmount' => 'double',
+        'totalNetAmount' => 'double'
+    ];
+
     public function customer() {
         return $this->belongsTo(Customer::class);
     }
 
     public function products() {
         return $this->hasMany(CustomerProduct::class, 'customer_id', 'customer_id');
+    }
+
+    public function position() {
+        return $this->hasMany(CustomerInvoicePosition::class);
     }
 }

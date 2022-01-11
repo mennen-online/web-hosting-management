@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Customer;
 use App\Services\Lexoffice\Endpoints\VoucherlistEndpoint;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 class SyncLexofficeInvoices extends Command
 {
@@ -42,8 +43,8 @@ class SyncLexofficeInvoices extends Command
      */
     public function handle() {
         if ($this->voucherlistEndpoint->isLexofficeAvailable()) {
-            $customers = Customer::all()->filter(function($customer) {
-                if($customer->invoices()->first() === null) {
+            $customers = Customer::all()->filter(function ($customer) {
+                if ($customer->invoices()->first() === null) {
                     return $customer;
                 }
             });
@@ -80,14 +81,14 @@ class SyncLexofficeInvoices extends Command
 
                 do {
                     $result = $this->voucherlistEndpoint->setPage($page)->index();
-                    if($result) {
+                    if ($result) {
                         foreach ($result->content as $invoice) {
                             $customerInvoices->add($invoice);
                         }
                     }
 
                     $page += 1;
-                } while ($result &&$result->last === false);
+                } while ($result && $result->last === false);
             }
         }
 
@@ -96,15 +97,41 @@ class SyncLexofficeInvoices extends Command
                 $this->processInvoice($customer, $invoice);
             });
         } else {
-            $this->info($customer->id . ' has no new Invoices');
+            $this->info($customer->id.' has no new Invoices');
         }
     }
 
     private
     function processInvoice($customer, $invoice) {
         $this->info('Processing Invoice '.$invoice->voucherNumber);
-        $customer->invoices()->firstOrCreate([
-            'lexoffice_id' => $invoice->id
+        $invoice = $customer->invoices()->firstOrCreate([
+            'lexoffice_id'     => $invoice->id,
+            'voucherNumber'    => $invoice->voucherNumber,
+            'totalNetAmount'   => $invoice->totalPrice->totalNetAmount,
+            'totalGrossAmount' => $invoice->totalPrice->totalGrossAmount,
+            'totalTaxAmount'   => $invoice->totalPrice->totalTaxAmount
         ]);
+
+        collect($invoice->lineItems)->each(function ($position) use ($invoice) {
+            if (Str::is(['custom', 'text'], $position->type)) {
+                $invoice->position()->create(
+                    match ($position->type) {
+                        'custom' => [
+                            'type'               => $position->type,
+                            'name'               => $position->name,
+                            'unitName'           => $position->unitName,
+                            'unitPrice'          => $position->unitPrice,
+                            'discountPercentage' => $position->discountPercentage
+                        ],
+                        'text' => [
+                            'type'        => $position->type,
+                            'name'        => $position->name,
+                            'description' => $position->description
+                        ],
+                        default => []
+                    }
+                );
+            }
+        });
     }
 }

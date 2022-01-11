@@ -25,6 +25,14 @@ class Connector
             $this->domrobot->useLive();
         }
 
+        return $this;
+    }
+
+    public function isOte() {
+        return $this->domrobot->isOte();
+    }
+
+    protected function prepareRequest() {
         if(config('internetworx.username') === null || config('internetworx.password') === null) {
             Log::warning('Please provide Internetworx Credentials');
         }else {
@@ -33,12 +41,6 @@ class Connector
                 config('internetworx.password')
             );
         }
-
-        return $this;
-    }
-
-    public function isOte() {
-        return $this->domrobot->isOte();
     }
 
     protected function processResponse($response, string $object): Collection|string {

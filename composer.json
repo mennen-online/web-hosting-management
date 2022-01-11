@@ -9,6 +9,7 @@
         "armincms/chain": "^0.4.2",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
+        "inspector-apm/inspector-laravel": "^4.7",
         "inwx/domrobot": "^3.2",
         "laravel/dusk": "^6.18",
         "laravel/framework": "^8.54",
