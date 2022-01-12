@@ -14,7 +14,12 @@ class Customer extends Model
         'id',
         'lexoffice_id',
         'user_id',
-        'company'
+        'company',
+        'salutation',
+        'first_name',
+        'last_name',
+        'email',
+        'phone'
     ];
 
     protected $dates = [
