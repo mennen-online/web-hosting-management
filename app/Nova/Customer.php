@@ -65,19 +65,19 @@ class Customer extends Resource
                 if($customer !== null) {
                     return [
                         Text::make(__('Street & Number'), 'street_number', function () use ($customer) {
-                            return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->street : '';
+                            return $customer?->addresses?->billing[0]?->street_number ?? '';
                         })->readonly($this->addressCanBeUpdated($customer)),
                         Text::make(__('Supplement'), 'supplement', function () use ($customer) {
-                            return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->supplement : '';
+                            return $customer?->addresses?->billing[0]?->supplement ?? '';
                         })->readonly($this->addressCanBeUpdated($customer)),
                         Text::make(__('Postcode'), 'postcode', function () use ($customer) {
-                            return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->zip : '';
+                            return $customer?->addresses?->billing[0]?->zip ?? '';
                         })->readonly($this->addressCanBeUpdated($customer)),
                         Text::make(__('City'), 'city', function () use ($customer) {
-                            return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->city : '';
+                            return $customer?->addresses?->billing[0]?->city ?? '';
                         })->readonly($this->addressCanBeUpdated($customer)),
                         Select::make(__('Country'), 'countryCode', function () use ($customer) {
-                            return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->countryCode : '';
+                            return $customer?->addresses?->billing[0]?->countryCode ?? '';
                         })->options([
                             'DE' => 'Deutschland',
                             'IT' => 'Italien',

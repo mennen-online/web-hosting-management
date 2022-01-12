@@ -15,7 +15,9 @@ class CustomerInvoiceObserver
      */
     public function created(CustomerInvoice $customerInvoice)
     {
-        $customerInvoice->customer->user->notify(new InvoiceCreatedNotification($customerInvoice));
+        if(!app()->runningInConsole()) {
+            $customerInvoice->customer->user->notify(new InvoiceCreatedNotification($customerInvoice));
+        }
     }
 
     /**

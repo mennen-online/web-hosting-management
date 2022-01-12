@@ -12,6 +12,7 @@ class CustomerInvoice extends Model
 
     protected $fillable = [
         'lexoffice_id',
+        'voucherNumber',
         'totalTaxAmount',
         'totalGrossAmount',
         'totalNetAmount',

@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\Customer;
+use App\Models\CustomerInvoice;
+use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use App\Services\Lexoffice\Endpoints\VoucherlistEndpoint;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
@@ -104,15 +106,18 @@ class SyncLexofficeInvoices extends Command
     private
     function processInvoice($customer, $invoice) {
         $this->info('Processing Invoice '.$invoice->voucherNumber);
+
+        $invoiceData =  app()->make(InvoicesEndpoint::class)->get(new CustomerInvoice(['lexoffice_id' => $invoice->id]));
+
         $invoice = $customer->invoices()->firstOrCreate([
             'lexoffice_id'     => $invoice->id,
             'voucherNumber'    => $invoice->voucherNumber,
-            'totalNetAmount'   => $invoice->totalPrice->totalNetAmount,
-            'totalGrossAmount' => $invoice->totalPrice->totalGrossAmount,
-            'totalTaxAmount'   => $invoice->totalPrice->totalTaxAmount
+            'totalNetAmount'   => $invoiceData->totalPrice->totalNetAmount,
+            'totalGrossAmount' => $invoiceData->totalPrice->totalGrossAmount,
+            'totalTaxAmount'   => $invoiceData->totalPrice->totalTaxAmount
         ]);
 
-        collect($invoice->lineItems)->each(function ($position) use ($invoice) {
+        collect($invoiceData->lineItems)->each(function ($position) use ($invoice) {
             if (Str::is(['custom', 'text'], $position->type)) {
                 $invoice->position()->create(
                     match ($position->type) {

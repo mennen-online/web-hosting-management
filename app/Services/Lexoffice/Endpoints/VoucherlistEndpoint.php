@@ -141,10 +141,6 @@ class VoucherlistEndpoint extends Connector
             $query['updatedDateTo'] = $this->updatedDateTo->format('Y-m-d');
         }
 
-        $response = $this->getRequest('/voucherlist?', $query);
-
-        if ($response->ok()) {
-            return $response->object();
-        }
+        return $this->getRequest('/voucherlist?', $query);
     }
 }
