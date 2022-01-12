@@ -37,7 +37,7 @@ class Customer extends Resource
      * @var array
      */
     public static $search = [
-        'id',
+        'id', 'first_name', 'last_name', 'email'
     ];
 
     //public static $displayInNavigation = false;

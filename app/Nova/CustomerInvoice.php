@@ -66,18 +66,14 @@ class CustomerInvoice extends Resource
             $fields = [
                 BelongsTo::make(__('Customer')),
                 ID::make(__('ID'), 'id')->sortable(),
-                Text::make('Rechnungsnummer', function () use ($invoice) {
-                    return $invoice->voucherNumber;
-                })->readonly(true),
+                Text::make('Rechnungsnummer', 'voucherNumber')->readonly(true),
                 Date::make('Rechnungsdatum', function () use ($invoice) {
                     return Carbon::parse($invoice->voucherDate)->format('d.m.Y');
                 })->readonly(true),
-                Currency::make('Gesamtbetrag inkl. MwSt.', function () use ($invoice) {
-                    return $this->getTotalPrice($invoice);
-                })->currency($invoice->totalPrice->currency)->readonly(true),
-                Number::make('Positionen', function () use ($invoice) {
-                    return count($invoice->lineItems);
-                })->readonly(true)->showOnDetail(false),
+                Currency::make('Gesamtbetrag inkl. MwSt.', 'totalGrossAmount')->currency($invoice->totalPrice->currency)->readonly(true),
+                Number::make('Positionen', function() {
+                    return $this->resource->position()->count();
+                })->readonly(true)->showOnDetail(false)
             ];
 
             $lineItems = $this->lineItemFields($invoice->lineItems);
