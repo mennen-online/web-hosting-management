@@ -76,10 +76,14 @@ jobs:
 
       - name: Update Dependencies with latest stable
         if: matrix.dependency-stability == 'prefer-stable'
-        run: composer update --prefer-stable
+        run: |
+          composer config http-basic.nova.laravel.com "${{ secrets.NOVA_USERNAME }}" "${{ secrets.NOVA_PASSWORD }}"
+          composer update --prefer-stable
       - name: Update Dependencies with lowest stable
         if: matrix.dependency-stability == 'prefer-lowest'
-        run: composer update --prefer-stable --prefer-lowest
+        run: |
+          composer config http-basic.nova.laravel.com "${{ secrets.NOVA_USERNAME }}" "${{ secrets.NOVA_PASSWORD }}"
+          composer update --prefer-stable --prefer-lowest
 
       - name: Generate key
         run: php artisan key:generate
@@ -92,6 +96,7 @@ jobs:
           DB_DATABASE: db_test_laravel
           DB_PORT: 33306
           DB_USER: root
+          LEXOFFICE_ACCESS_TOKEN: ${{ secrets.LEXOFFICE_TOKEN }}
 
         run: php artisan migrate
 
