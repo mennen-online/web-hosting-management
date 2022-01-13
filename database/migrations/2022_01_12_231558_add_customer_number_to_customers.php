@@ -18,12 +18,6 @@ class AddCustomerNumberToCustomers extends Migration
         Schema::table('customers', function (Blueprint $table) {
             $table->string('number')->default("")->after('lexoffice_id');
         });
-
-        app()->make(ContactsEndpoint::class)->index()->each(function($customer) {
-            if($customer?->roles?->customer?->number) {
-                Customer::where('lexoffice_id', $customer->id)->update(['number' => $customer->roles->customer->number]);
-            }
-        });
     }
 
     /**
