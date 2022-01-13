@@ -14,9 +14,12 @@ class CustomerInvoicePosition extends Model
         'type',
         'name',
         'description',
-        'unitName',
-        'unitPrice',
-        'discountPercentage'
+        'unit_name',
+        'unit_price',
+        'currency',
+        'net_amount',
+        'tax_rate_percentage',
+        'discount_percentage'
     ];
 
     protected $casts = [

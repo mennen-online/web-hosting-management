@@ -48,25 +48,36 @@ class SyncLexofficeContacts extends Command
     public function handle() {
         $this->contactsEndpoint = app()->make(ContactsEndpoint::class);
         $this->customerRole = Role::byName('Customer');
+        $customers = collect();
         if ($this->contactsEndpoint->isLexofficeAvailable()) {
             $page = 0;
             $results = $this->contactsEndpoint->setPageSize(500)->setPage($page)->index();
-            if(property_exists($results, 'last')) {
+            if (property_exists($results, 'last')) {
                 do {
                     $this->line("Processing Page ".$page, 'info');
                     $page += 1;
-                    if($page > 0) {
-                        $contacts = collect($results->content);
-                        $this->withProgressBar($contacts, function ($contact) {
-                            $this->processContact($contact);
+                    if ($page > 0) {
+                        collect($results->content)->filter(function($contact) {
+                            if(property_exists($contact->roles, 'customer')) {
+                                return $contact;
+                            }
+                        })->each(function($contact) use($customers) {
+                            $customers->add($contact);
                         });
                     }
                 } while ($results->last === false);
-            }else {
-                $this->withProgressBar($results, function($contact) {
-                    $this->processContact($contact);
+            } else {
+                $results->filter(function($contact) {
+                    if(property_exists($contact->roles, 'customer')) {
+                        return $contact;
+                    }
+                })->each(function($contact) use($customers) {
+                    $customers->add($contact);
                 });
             }
+            $this->withProgressBar($customers, function($contact) {
+                $this->processContact($contact);
+            });
             return 0;
         }
         $this->error('Lexoffice is not active');
@@ -81,7 +92,7 @@ class SyncLexofficeContacts extends Command
                 }
             })->first();
 
-            if($contactPerson) {
+            if ($contactPerson) {
                 $user = User::firstOrCreate(
                     [
                         'email' => $contactPerson->emailAddress,
@@ -98,6 +109,7 @@ class SyncLexofficeContacts extends Command
                 $customer = $user->customer()->firstOrCreate(
                     [
                         'lexoffice_id' => $contact->id,
+                        'number'       => $contact?->roles?->customer?->number ?? "",
                         'company'      => json_encode($contact->company),
                         'salutation'   => $contactPerson->salutation,
                         'email'        => $contactPerson->emailAddress,
@@ -156,8 +168,8 @@ class SyncLexofficeContacts extends Command
             $customer = $user->customer()->firstOrCreate([
                 'lexoffice_id' => $contact->id,
                 'salutation'   => $contact->person->salutation,
-                'first_name'    => $contact->person->firstName,
-                'last_name'     => $contact->person->lastName,
+                'first_name'   => $contact->person->firstName,
+                'last_name'    => $contact->person->lastName,
                 'email'        => $contact->person->email ?? "",
                 'phone'        => $contact->person->phone ?? ""
             ]);

@@ -12,10 +12,12 @@ class CustomerInvoice extends Model
 
     protected $fillable = [
         'lexoffice_id',
-        'voucherNumber',
-        'totalTaxAmount',
-        'totalGrossAmount',
-        'totalNetAmount',
+        'voucher_number',
+        'voucher_date',
+        'total_tax_amount',
+        'total_gross_amount',
+        'total_net_amount',
+        'payment_term_duration',
         'customer_id'
     ];
 
@@ -27,7 +29,8 @@ class CustomerInvoice extends Model
     protected $casts = [
         'totalTaxAmount' => 'double',
         'totalGrossAmount' => 'double',
-        'totalNetAmount' => 'double'
+        'totalNetAmount' => 'double',
+        'voucher_date' => 'date'
     ];
 
     public function customer() {

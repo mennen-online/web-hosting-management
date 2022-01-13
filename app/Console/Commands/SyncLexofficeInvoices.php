@@ -60,7 +60,6 @@ class SyncLexofficeInvoices extends Command
     private function processImportCustomer($customer) {
         $customerInvoices = collect();
         foreach ([
-            'draft',
             'open',
             'overdue',
             'paid',
@@ -107,14 +106,16 @@ class SyncLexofficeInvoices extends Command
     function processInvoice($customer, $invoice) {
         $this->info('Processing Invoice '.$invoice->voucherNumber);
 
-        $invoiceData =  app()->make(InvoicesEndpoint::class)->get(new CustomerInvoice(['lexoffice_id' => $invoice->id]));
+        $invoiceData = app()->make(InvoicesEndpoint::class)->get(new CustomerInvoice(['lexoffice_id' => $invoice->id]));
 
         $invoice = $customer->invoices()->firstOrCreate([
-            'lexoffice_id'     => $invoice->id,
-            'voucherNumber'    => $invoice->voucherNumber,
-            'totalNetAmount'   => $invoiceData->totalPrice->totalNetAmount,
-            'totalGrossAmount' => $invoiceData->totalPrice->totalGrossAmount,
-            'totalTaxAmount'   => $invoiceData->totalPrice->totalTaxAmount
+            'lexoffice_id'          => $invoice->id,
+            'voucher_number'        => $invoice->voucherNumber,
+            'voucher_date'          => $invoice->voucherDate,
+            'total_net_amount'      => $invoiceData->totalPrice->totalNetAmount,
+            'total_gross_amount'    => $invoiceData->totalPrice->totalGrossAmount,
+            'total_tax_amount'      => $invoiceData->totalPrice->totalTaxAmount,
+            'payment_term_duration' => $invoiceData->paymentConditions->paymentTermDuration
         ]);
 
         collect($invoiceData->lineItems)->each(function ($position) use ($invoice) {
@@ -122,18 +123,19 @@ class SyncLexofficeInvoices extends Command
                 $invoice->position()->create(
                     match ($position->type) {
                         'custom' => [
-                            'type'               => $position->type,
-                            'name'               => $position->name,
-                            'unitName'           => $position->unitName,
-                            'unitPrice'          => $position->unitPrice,
-                            'discountPercentage' => $position->discountPercentage
+                            'type'                => $position->type,
+                            'name'                => $position->name,
+                            'unit_name'           => $position->unitName,
+                            'currency'            => $position->unitPrice->currency,
+                            'net_amount'          => $position->unitPrice->netAmount,
+                            'tax_rate_percentage' => $position->unitPrice->taxRatePercentage,
+                            'discount_percentage' => $position->discountPercentage
                         ],
                         'text' => [
                             'type'        => $position->type,
                             'name'        => $position->name,
                             'description' => $position->description
-                        ],
-                        default => []
+                        ]
                     }
                 );
             }

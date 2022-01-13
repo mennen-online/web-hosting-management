@@ -14,6 +14,7 @@ class Customer extends Model
         'id',
         'lexoffice_id',
         'user_id',
+        'number',
         'company',
         'salutation',
         'first_name',

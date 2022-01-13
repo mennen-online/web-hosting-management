@@ -58,9 +58,7 @@ class Customer extends Resource
             BelongsTo::make(__('User'))->withoutTrashed(),
             ID::make(__('ID'))->readonly(true)->showOnIndex(false),
             Text::make(__('Lexoffice ID'))->readonly(true)->showOnIndex(false),
-            Text::make(__('Kundennummer'), 'customer_number', function() use($customer) {
-                return $customer->roles->customer->number;
-            })->showOnCreating(false)->showOnUpdating(is_object($customer) && property_exists($customer, 'roles'))->readonly(true),
+            Text::make(__('Kundennummer'), 'number')->showOnCreating(false)->showOnUpdating(is_object($customer) && property_exists($customer, 'roles'))->readonly(true),
             new Panel(__('Billing'), function() use($customer){
                 if($customer !== null) {
                     return [
