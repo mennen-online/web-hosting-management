@@ -42,11 +42,15 @@ class AddUnitPriceInformationToCustomerInvoicePositions extends Migration
                     ])
                 ]);
             });
-            $table->dropColumn([
+            foreach([
                 'tax_rate_percentage',
                 'net_amount',
                 'currency'
-            ]);
+            ] as $column) {
+                if(Schema::hasColumn('customer_invoice_positions', $column)) {
+                    $table->dropColumn($column);
+                }
+            }
         });
     }
 }

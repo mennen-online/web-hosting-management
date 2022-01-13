@@ -46,19 +46,4 @@ class DomainTest extends TestCase
             }
         });
     }
-
-    public function testGetDomain() {
-        $domain = Domain::factory()->create();
-
-        $product = Product::where('name', 'LIKE',  '%.de%')->first();
-
-        CustomerProduct::factory()->create([
-            'product_id' => $product->id,
-            'domain_id' => $domain->id
-        ]);
-
-        $info = app()->make(DomainObject::class)->get($domain);
-
-        $this->assertArrayHasKey('roId', $info);
-    }
 }

@@ -106,8 +106,8 @@ class ContactsEndpoint extends Connector
             'roles' => $role,
             'person' => [
                 'salutation' => $customer->salutation,
-                'firstName' => $customer->firstName,
-                'lastName' => $customer->lastName,
+                'firstName' => $customer->first_name,
+                'lastName' => $customer->last_name,
             ],
             'note' => $customer->note
         ];

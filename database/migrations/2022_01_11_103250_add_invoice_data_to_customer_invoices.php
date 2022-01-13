@@ -11,8 +11,7 @@ class AddInvoiceDataToCustomerInvoices extends Migration
      *
      * @return void
      */
-    public function up()
-    {
+    public function up() {
         Schema::table('customer_invoices', function (Blueprint $table) {
             $table->double('totalTaxAmount')->after('lexoffice_id');
             $table->double('totalGrossAmount')->after('lexoffice_id');
@@ -26,15 +25,18 @@ class AddInvoiceDataToCustomerInvoices extends Migration
      *
      * @return void
      */
-    public function down()
-    {
-        Schema::table('customer_invoices', function (Blueprint $table) {
-            $table->dropColumn([
-                'totalTaxAmount',
-                'totalGrossAmount',
-                'totalNetAmount',
-                'voucherNumber'
-            ]);
-        });
+    public function down() {
+        foreach ([
+            'totalTaxAmount',
+            'totalGrossAmount',
+            'totalNetAmount',
+            'voucherNumber'
+        ] as $column) {
+            if (Schema::hasColumn('customer_invoices', $column)) {
+                Schema::table('customer_invoices', function (Blueprint $table) use($column) {
+                    $table->dropColumn($column);
+                });
+            }
+        }
     }
 }

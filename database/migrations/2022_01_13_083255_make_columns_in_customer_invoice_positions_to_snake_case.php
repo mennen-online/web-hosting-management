@@ -11,11 +11,14 @@ class MakeColumnsInCustomerInvoicePositionsToSnakeCase extends Migration
      *
      * @return void
      */
-    public function up()
-    {
+    public function up() {
         Schema::table('customer_invoice_positions', function (Blueprint $table) {
             $table->renameColumn('unitName', 'unit_name');
+        });
+        Schema::table('customer_invoice_positions', function (Blueprint $table) {
             $table->renameColumn('unitPrice', 'unit_price');
+        });
+        Schema::table('customer_invoice_positions', function (Blueprint $table) {
             $table->renameColumn('discountPercentage', 'discount_percentage');
         });
     }
@@ -25,11 +28,14 @@ class MakeColumnsInCustomerInvoicePositionsToSnakeCase extends Migration
      *
      * @return void
      */
-    public function down()
-    {
+    public function down() {
         Schema::table('customer_invoice_positions', function (Blueprint $table) {
             $table->renameColumn('unit_name', 'unitName');
+        });
+        Schema::table('customer_invoice_positions', function (Blueprint $table) {
             $table->renameColumn('unit_price', 'unitPrice');
+        });
+        Schema::table('customer_invoice_positions', function (Blueprint $table) {
             $table->renameColumn('discount_percentage', 'discountPercentage');
         });
     }

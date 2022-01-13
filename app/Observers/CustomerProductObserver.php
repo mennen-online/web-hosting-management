@@ -19,7 +19,7 @@ class CustomerProductObserver
      */
     public function created(CustomerProduct $customerProduct)
     {
-        if($customerProduct->domain) {
+        if($customerProduct->domain && !app()->runningUnitTests()) {
             $product = $customerProduct->product;
 
             if (class_exists($classname = 'App\\Services\\Product\\Models\\'.Str::kebab($product->name))) {

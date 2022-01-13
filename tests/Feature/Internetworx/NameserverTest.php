@@ -32,6 +32,8 @@ class NameserverTest extends TestCase
     }
 
     public function testCreateNameserverEntry() {
+        $this->markTestIncomplete('Need to Refactor');
+
         $index = $this->domainObject->index();
 
         $index = $index->filter(function($domain) {

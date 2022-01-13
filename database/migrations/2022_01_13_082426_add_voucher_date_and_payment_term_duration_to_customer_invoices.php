@@ -13,10 +13,16 @@ class AddVoucherDateAndPaymentTermDurationToCustomerInvoices extends Migration
      */
     public function up()
     {
-        Schema::table('customer_invoices', function (Blueprint $table) {
+        Schema::table('customer_invoices', function(Blueprint $table) {
             $table->renameColumn('totalNetAmount', 'total_net_amount');
+        });
+        Schema::table('customer_invoices', function(Blueprint $table) {
             $table->renameColumn('totalGrossAmount', 'total_gross_amount');
+        });
+        Schema::table('customer_invoices', function(Blueprint $table) {
             $table->renameColumn('totalTaxAmount', 'total_tax_amount');
+        });
+        Schema::table('customer_invoices', function (Blueprint $table) {
             $table->renameColumn('voucherNumber', 'voucher_number');
             $table->integer('payment_term_duration')->nullable()->default(null)->after('totalTaxAmount');
             $table->date('voucher_date')->nullable()->default(null)->after('totalTaxAmount');
@@ -30,13 +36,23 @@ class AddVoucherDateAndPaymentTermDurationToCustomerInvoices extends Migration
      */
     public function down()
     {
-        Schema::table('customer_invoices', function (Blueprint $table) {
-            $table->dropColumn([
+        Schema::table('customer_invoices', function(Blueprint $table) {
+            foreach([
                 'payment_term_duration',
                 'voucher_date'
-            ]);
+            ] as $column) {
+                if(Schema::hasColumn('customer_invoices', $column)) {
+                    $table->dropColumn($column);
+                }
+            }
+        });
+        Schema::table('customer_invoices', function (Blueprint $table) {
             $table->renameColumn('total_net_amount', 'totalNetAmount');
+        });
+        Schema::table('customer_invoices', function(Blueprint $table) {
             $table->renameColumn('total_gross_amount', 'totalGrossAmount');
+        });
+        Schema::table('customer_invoices', function(Blueprint $table) {
             $table->renameColumn('total_tax_amount', 'totalTaxAmount');
         });
     }
