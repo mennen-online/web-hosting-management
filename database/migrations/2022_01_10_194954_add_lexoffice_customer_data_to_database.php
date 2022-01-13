@@ -21,9 +21,9 @@ class AddLexofficeCustomerDataToDatabase extends Migration
         Schema::table('customers', function(Blueprint $blueprint) {
             $blueprint->string('phone')->after('lexoffice_id')->nullable()->default(null);
             $blueprint->string('email')->after('lexoffice_id')->nullable()->default(null);
-            $blueprint->string('last_name')->after('lexoffice_id');
-            $blueprint->string('first_name')->after('lexoffice_id');
-            $blueprint->string('salutation', 5)->after('lexoffice_id');
+            $blueprint->string('last_name')->default('')->after('lexoffice_id');
+            $blueprint->string('first_name')->default('')->after('lexoffice_id');
+            $blueprint->string('salutation', 5)->default('')->after('lexoffice_id');
         });
     }
 
