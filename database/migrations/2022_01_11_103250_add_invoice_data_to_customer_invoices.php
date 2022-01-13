@@ -13,10 +13,10 @@ class AddInvoiceDataToCustomerInvoices extends Migration
      */
     public function up() {
         Schema::table('customer_invoices', function (Blueprint $table) {
-            $table->double('totalTaxAmount')->after('lexoffice_id');
-            $table->double('totalGrossAmount')->after('lexoffice_id');
-            $table->double('totalNetAmount')->after('lexoffice_id');
-            $table->string('voucherNumber')->after('lexoffice_id');
+            $table->double('totalTaxAmount')->default(0.00)->after('lexoffice_id');
+            $table->double('totalGrossAmount')->default(0.00)->after('lexoffice_id');
+            $table->double('totalNetAmount')->default(0.00)->after('lexoffice_id');
+            $table->string('voucherNumber')->default('')->after('lexoffice_id');
         });
     }
 
