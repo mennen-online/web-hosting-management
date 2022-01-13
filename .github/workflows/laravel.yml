@@ -39,6 +39,8 @@ jobs:
         DB_DATABASE: database/database.sqlite
         LEXOFFICE_ACCESS_TOKEN: 0ff74fcd-bd92-4eb2-bcd6-1fc43d1768dc
       run: vendor/bin/phpunit
+    - name: Migrate and Seed Database
+      run: php artisan migrate --seed
     - name: Import Lexoffice Contacts
       run: php artisan lexoffice:contacts:sync
     - name: Import Lexoffice Invoices
