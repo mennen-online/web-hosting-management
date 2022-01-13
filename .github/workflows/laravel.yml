@@ -18,6 +18,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+    - name: Configure Laravel Nova Access
+      run: composer config http-basic.nova.laravel.com ${{NOVA_USERNAME}} ${{NOVA_PASSWORD}}
+      env:
+        NOVA_USERNAME: hendrik.mennen@mennen.online
+        NOVA_PASSWORD: mennen-1T
     - name: Install Dependencies
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
     - name: Generate key
