@@ -23,7 +23,7 @@ jobs:
         NOVA_USERNAME: hendrik.mennen@mennen.online
         NOVA_PASSWORD: mennen-1T
       run: | 
-        composer config http-basic.nova.laravel.com ${{ secrets.NOVA_USERNAME }}" "${{ secrets.NOVA_PASSWORD }}
+        composer config http-basic.nova.laravel.com "${{ secrets.NOVA_USERNAME }}" "${{ secrets.NOVA_PASSWORD }}"
         composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
     - name: Generate key
       run: php artisan key:generate
