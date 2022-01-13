@@ -57,25 +57,25 @@ class SyncLexofficeContacts extends Command
                     $this->line("Processing Page ".$page, 'info');
                     $page += 1;
                     if ($page > 0) {
-                        collect($results->content)->filter(function($contact) {
-                            if(property_exists($contact->roles, 'customer')) {
+                        collect($results->content)->filter(function ($contact) {
+                            if (property_exists($contact->roles, 'customer')) {
                                 return $contact;
                             }
-                        })->each(function($contact) use($customers) {
+                        })->each(function ($contact) use ($customers) {
                             $customers->add($contact);
                         });
                     }
                 } while ($results->last === false);
             } else {
-                $results->filter(function($contact) {
-                    if(property_exists($contact->roles, 'customer')) {
+                $results->filter(function ($contact) {
+                    if (property_exists($contact->roles, 'customer')) {
                         return $contact;
                     }
-                })->each(function($contact) use($customers) {
+                })->each(function ($contact) use ($customers) {
                     $customers->add($contact);
                 });
             }
-            $this->withProgressBar($customers, function($contact) {
+            $this->withProgressBar($customers, function ($contact) {
                 $this->processContact($contact);
             });
             return 0;
@@ -185,6 +185,18 @@ class SyncLexofficeContacts extends Command
                     'email'      => $email,
                     'phone'      => $phone ?? ""
                 ]);
+        }
+
+        if (isset($customer) && property_exists($contact, 'addresses') && property_exists($contact->addresses, 'billing') && Arr::has($contact->addresses->billing, 0)) {
+            $address = $contact->addresses->billing[0];
+            $customer->address()->create([
+                'type'         => 'billing',
+                'street'       => $address->street,
+                'supplement'   => $address->supplement ?? '',
+                'zip'          => $address->zip,
+                'city'         => $address->city,
+                'country_code' => $address->countryCode
+            ]);
         }
     }
 }

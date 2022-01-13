@@ -7,6 +7,7 @@ use Armincms\Fields\Chain;
 use Illuminate\Http\Request;
 use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\HasMany;
+use Laravel\Nova\Fields\HasOne;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
@@ -49,40 +50,16 @@ class Customer extends Resource
      * @return array
      */
     public function fields(Request $request) {
-        $customer = null;
-        if ($this->lexoffice_id !== null) {
-            $customer = app()->make(ContactsEndpoint::class)->get($this->lexoffice_id);
-        }
-
-        $fields = [
+        return [
             BelongsTo::make(__('User'))->withoutTrashed(),
             ID::make(__('ID'))->readonly(true)->showOnIndex(false),
             Text::make(__('Lexoffice ID'))->readonly(true)->showOnIndex(false),
-            Text::make(__('Kundennummer'), 'number')->showOnCreating(false)->showOnUpdating(is_object($customer) && property_exists($customer, 'roles'))->readonly(true),
-            new Panel(__('Billing'), function() use($customer){
-                if($customer !== null) {
-                    return [
-                        Text::make(__('Street & Number'), 'street_number', function () use ($customer) {
-                            return $customer?->addresses?->billing[0]?->street_number ?? '';
-                        })->readonly($this->addressCanBeUpdated($customer)),
-                        Text::make(__('Supplement'), 'supplement', function () use ($customer) {
-                            return $customer?->addresses?->billing[0]?->supplement ?? '';
-                        })->readonly($this->addressCanBeUpdated($customer)),
-                        Text::make(__('Postcode'), 'postcode', function () use ($customer) {
-                            return $customer?->addresses?->billing[0]?->zip ?? '';
-                        })->readonly($this->addressCanBeUpdated($customer)),
-                        Text::make(__('City'), 'city', function () use ($customer) {
-                            return $customer?->addresses?->billing[0]?->city ?? '';
-                        })->readonly($this->addressCanBeUpdated($customer)),
-                        Select::make(__('Country'), 'countryCode', function () use ($customer) {
-                            return $customer?->addresses?->billing[0]?->countryCode ?? '';
-                        })->options([
-                            'DE' => 'Deutschland',
-                            'IT' => 'Italien',
-                            'FR' => 'Frankreich'
-                        ])->readonly($this->addressCanBeUpdated($customer))
-                    ];
-                }
+            Text::make(__('Kundennummer'), 'number')->showOnCreating(false),
+            Text::make(__('Straße & Nr.'), 'address.street')->readonly(true),
+            Text::make(__('PLZ'), 'address.zip')->readonly(true),
+            Text::make(__('Ort'), 'address.city')->readonly(true),
+            new Panel(__('Billing'), function(){
+                return [HasOne::make('CustomerAddress', 'address')];
             }),
             HasMany::make(__('Customer Contact'), 'contacts')->showOnCreating(false),
             HasMany::make(__('Customer Invoices'), 'invoices')->showOnCreating(false),
@@ -116,8 +93,6 @@ class Customer extends Resource
                 };
             })->showOnUpdating(false)->showOnCreating(true)
         ];
-
-        return $fields;
     }
 
     /**
