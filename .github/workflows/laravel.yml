@@ -17,7 +17,7 @@ jobs:
         php-version: '8.0'
     - uses: actions/checkout@v2
     - name: Copy .env
-      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+      run: php -r "file_exists('.env') || copy('.env.ci', '.env');"
     - name: Configure Laravel Nova Access and run composer
       env:
         NOVA_USERNAME: hendrik.mennen@mennen.online
