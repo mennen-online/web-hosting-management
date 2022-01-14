@@ -128,7 +128,7 @@ class SyncLexofficeInvoices extends Command
                     'custom' => [
                         'type'                => $position->type,
                         'name'                => $position->name,
-                        'unit_name'           => $position->unitName,
+                        'unit_name'           => $position->unitName ?? "",
                         'currency'            => $position->unitPrice->currency,
                         'net_amount'          => $position->unitPrice->netAmount,
                         'tax_rate_percentage' => $position->unitPrice->taxRatePercentage,
