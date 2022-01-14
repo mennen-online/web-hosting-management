@@ -18,16 +18,8 @@ class UserSeeder extends Seeder
     {
         $administratorRole = Role::byName('Administrator');
 
-        $administrator = User::factory()->customer()->create();
+        $administrator = User::factory()->create();
 
         $administrator->roles()->attach($administratorRole);
-
-        $customerRole = Role::byName('Customer');
-
-        $customer = User::factory()->create([
-            'email' => 'customer@nova.com'
-        ]);
-
-        $customer->roles()->attach($customerRole);
     }
 }

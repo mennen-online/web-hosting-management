@@ -54,44 +54,18 @@ class SyncLexofficeContacts extends Command
         $customers = collect();
         if ($this->contactsEndpoint->isLexofficeAvailable()) {
             $page = 0;
-            $results = $this->contactsEndpoint->setPageSize(500)->setPage($page)->index();
-            if (property_exists($results, 'last')) {
-                do {
-                    $this->line("Processing Page " . $page, 'info');
-                    $page += 1;
-                    if ($page > 0) {
-                        collect($results->content)->filter(
-                            function ($contact) {
-                                if (property_exists($contact->roles, 'customer')) {
-                                    return $contact;
-                                }
-                            }
-                        )->each(
-                            function ($contact) use ($customers) {
-                                $customers->add($contact);
-                            }
-                        );
-                    }
-                } while ($results->last === false);
-            } else {
-                $results->filter(
-                    function ($contact) {
-                        if (property_exists($contact->roles, 'customer')) {
-                            return $contact;
-                        }
-                    }
-                )->each(
-                    function ($contact) use ($customers) {
-                        $customers->add($contact);
-                    }
-                );
-            }
-            $this->withProgressBar(
-                $customers,
-                function ($contact) {
-                    $this->processContact($contact);
-                }
-            );
+            do {
+                $results = $this->contactsEndpoint->setPageSize(500)->setPage($page)->onlyCustomer()->index();
+                $this->line("Processing Page " . $page, 'info');
+                $page += 1;
+                collect($results->content)->each(function ($contact) use ($customers) {
+                    $customers->add($contact);
+                });
+            } while ($results->last === false);
+
+            $this->withProgressBar($customers, function ($contact) {
+                $this->processContact($contact);
+            });
             return 0;
         }
         $this->error('Lexoffice is not active');
@@ -192,16 +166,15 @@ class SyncLexofficeContacts extends Command
                     ]
                 );
 
-                $customer = $user->customer()->firstOrCreate(
-                    [
+                $customer = $user->customer()->firstOrCreate([
                         'lexoffice_id' => $contact->id,
-                        'salutation' => $contact->person->salutation,
-                        'first_name' => $contact->person->firstName,
-                        'last_name' => $contact->person->lastName,
-                        'email' => $contact->person->email ?? "",
-                        'phone' => $contact->person->phone ?? ""
-                    ]
-                );
+                        'number'       => $contact->roles->customer->number,
+                        'salutation'   => $contact->person->salutation,
+                        'first_name'   => $contact->person->firstName,
+                        'last_name'    => $contact->person->lastName,
+                        'email'        => $contact->person->email ?? "",
+                        'phone'        => $contact->person->phone ?? ""
+                    ]);
 
                 $customer->contacts()->firstOrCreate(
                     [
@@ -223,16 +196,14 @@ class SyncLexofficeContacts extends Command
             && property_exists($contact->addresses, 'billing')
             && Arr::has($contact->addresses->billing, "0")) {
             $address = $contact->addresses->billing[0];
-            $customer->address()->create(
-                [
-                    'type' => 'billing',
-                    'street' => $address->street,
-                    'supplement' => $address->supplement ?? '',
-                    'zip' => $address->zip,
-                    'city' => $address->city,
-                    'country_code' => $address->countryCode
-                ]
-            );
+            $customer->address()->create([
+                    'type'         => 'billing',
+                    'street'       => $address->street,
+                    'supplement'   => $address->supplement ?? '',
+                    'zip'          => $address->zip ?? '',
+                    'city'         => $address->city ?? '',
+                    'country_code' => $address->countryCode ?? ''
+                ]);
         }
     }
 }

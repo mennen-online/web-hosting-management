@@ -73,14 +73,16 @@ class ContactsEndpoint extends Connector
         }
 
         if ($this->filterCustomer) {
-            $query['customer'] = "true";
+            $query['customer'] = true;
+            $query['vendor'] = false;
         }
 
         if ($this->filterVendor) {
-            $query['vendor'] = "true";
+            $query['vendor'] = true;
+            $query['customer'] = false;
         }
 
-        return collect($this->getRequest('/contacts', $query)->content);
+        return $this->getRequest('/contacts', $query);
     }
 
     public function get(string $id)
