@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\CustomerInvoice;
 use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use App\Services\Lexoffice\Endpoints\VoucherlistEndpoint;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -142,6 +143,8 @@ class SyncLexofficeInvoices extends Command
             }
         } catch (LexofficeException $lexofficeException) {
             Log::error($lexofficeException->getMessage());
+        } catch(Exception $exception) {
+            Log::error($exception->getMessage());
         }
     }
 }
