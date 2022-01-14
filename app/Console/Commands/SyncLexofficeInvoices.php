@@ -113,6 +113,10 @@ class SyncLexofficeInvoices extends Command
             ]);
 
             if($invoice->position()->count() !== count($invoiceData->lineItems)) {
+                $invoice->position()->each(function($position) {
+                    $position->delete();
+                });
+
                 collect($invoiceData->lineItems)->each(function ($position) use ($invoice) {
                     if (Str::is(['custom', 'text'], $position->type)) {
                         $invoice->position()->create(match ($position->type) {
