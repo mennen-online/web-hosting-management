@@ -139,7 +139,7 @@ class SyncLexofficeInvoices extends Command
                             default  => []
                         };
 
-                        if(!empty($invoiceData)) {
+                        if (!empty($invoiceData)) {
                             $invoice->position()->create($invoiceData);
                         }
                     }
