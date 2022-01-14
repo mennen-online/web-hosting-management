@@ -8,6 +8,7 @@ use App\Models\CustomerInvoice;
 use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use App\Services\Lexoffice\Endpoints\VoucherlistEndpoint;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -30,6 +31,8 @@ class SyncLexofficeInvoices extends Command
 
     protected VoucherlistEndpoint $voucherlistEndpoint;
 
+    protected Collection $invoices;
+
     /**
      * Create a new command instance.
      *
@@ -40,6 +43,8 @@ class SyncLexofficeInvoices extends Command
         parent::__construct();
 
         $this->voucherlistEndpoint = app()->make(VoucherlistEndpoint::class);
+
+        $this->invoices = collect();
     }
 
     /**
@@ -50,8 +55,13 @@ class SyncLexofficeInvoices extends Command
     public function handle()
     {
         if ($this->voucherlistEndpoint->isLexofficeAvailable()) {
-            $this->withProgressBar(Customer::all(), function ($customer) {
+            Customer::all()->each(function($customer) {
+                $this->info("Process $customer->number");
                 $this->processImportCustomer($customer);
+            });
+
+            $this->withProgressBar($this->invoices, function($invoice) {
+                $this->processInvoice($invoice['customer'], $invoice['data']);
             });
         }
         return 0;
@@ -59,7 +69,6 @@ class SyncLexofficeInvoices extends Command
 
     private function processImportCustomer($customer)
     {
-        $customerInvoices = collect();
         foreach ([
                      'open',
                      'overdue',
@@ -85,7 +94,10 @@ class SyncLexofficeInvoices extends Command
                     $result = $this->voucherlistEndpoint->setPage($page)->index();
                     if ($result) {
                         foreach ($result->content as $invoice) {
-                            $customerInvoices->add($invoice);
+                            $this->invoices->add([
+                                'customer' => $customer,
+                                'data' => $invoice
+                            ]);
                         }
                     }
 
@@ -93,15 +105,10 @@ class SyncLexofficeInvoices extends Command
                 } while ($result && $result->last === false);
             }
         }
-
-        $customerInvoices->each(function ($invoice) use ($customer) {
-            $this->processInvoice($customer, $invoice);
-        });
     }
 
     private function processInvoice($customer, $invoice)
     {
-        $this->info('Processing Invoice ' . $invoice->voucherNumber);
         try {
             $invoiceData = app()->make(InvoicesEndpoint::class)->get(new CustomerInvoice(['lexoffice_id' => $invoice->id]));
 
