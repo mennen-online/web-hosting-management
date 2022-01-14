@@ -116,6 +116,10 @@ class Connector
 
     private function processResponse(): object
     {
+        if (app()->runningInConsole()) {
+            return $this->response->object();
+        }
+
         if ($this->response->status() > 299 && !in_array($this->response->status(), $this->acceptableStatusCodes)) {
             Log::warning(json_encode($this->response->object()));
             throw new LexofficeException(json_encode($this->response->object()));
