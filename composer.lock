@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fb2fe22ab4d3162f6055536f193808d2",
+    "content-hash": "caa9ecac7c0c81ec10bbd2a59cf4774b",
     "packages": [
         {
             "name": "armincms/chain",
