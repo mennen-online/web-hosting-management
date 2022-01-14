@@ -11,7 +11,6 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use InvalidArgumentException;
 
 class SyncLexofficeInvoices extends Command
 {
@@ -55,13 +54,8 @@ class SyncLexofficeInvoices extends Command
     public function handle()
     {
         if ($this->voucherlistEndpoint->isLexofficeAvailable()) {
-            Customer::all()->each(function($customer) {
-                $this->info("Import Invoices for $customer->number");
+            $this->withProgressBar(Customer::orderBy('number')->get(), function ($customer) {
                 $this->processImportCustomer($customer);
-            });
-
-            $this->withProgressBar($this->invoices, function($invoice) {
-                $this->processInvoice($invoice['customer'], $invoice['data']);
             });
         }
         return 0;
@@ -94,9 +88,7 @@ class SyncLexofficeInvoices extends Command
                     $result = $this->voucherlistEndpoint->setPage($page)->index();
                     if ($result) {
                         foreach ($result->content as $invoice) {
-                            if($customer->invoices()->where('lexoffice_id', $invoice->id)->exists() === null) {
-                                $this->processInvoice($customer, $invoice);
-                            }
+                            $this->processInvoice($customer, $invoice);
                         }
                     }
                     $page += 1;
@@ -110,17 +102,17 @@ class SyncLexofficeInvoices extends Command
         try {
             $invoiceData = app()->make(InvoicesEndpoint::class)->get(new CustomerInvoice(['lexoffice_id' => $invoice->id]));
 
-            if($customer->invoices()->where('lexoffice_id', $invoice->id)->exists() === null) {
-                $invoice = $customer->invoices()->create([
-                    'lexoffice_id'          => $invoice->id,
-                    'voucher_number'        => $invoice->voucherNumber,
-                    'voucher_date'          => $invoice->voucherDate,
-                    'total_net_amount'      => $invoiceData->totalPrice->totalNetAmount,
-                    'total_gross_amount'    => $invoiceData->totalPrice->totalGrossAmount,
-                    'total_tax_amount'      => $invoiceData->totalPrice->totalTaxAmount,
-                    'payment_term_duration' => $invoiceData->paymentConditions->paymentTermDuration
-                ]);
+            $invoice = $customer->invoices()->firstOrCreate([
+                'lexoffice_id'          => $invoice->id,
+                'voucher_number'        => $invoice->voucherNumber,
+                'voucher_date'          => $invoice->voucherDate,
+                'total_net_amount'      => $invoiceData->totalPrice->totalNetAmount,
+                'total_gross_amount'    => $invoiceData->totalPrice->totalGrossAmount,
+                'total_tax_amount'      => $invoiceData->totalPrice->totalTaxAmount,
+                'payment_term_duration' => $invoiceData->paymentConditions->paymentTermDuration
+            ]);
 
+            if($invoice->position()->count() !== count($invoiceData->lineItems)) {
                 collect($invoiceData->lineItems)->each(function ($position) use ($invoice) {
                     if (Str::is(['custom', 'text'], $position->type)) {
                         $invoice->position()->create(match ($position->type) {
