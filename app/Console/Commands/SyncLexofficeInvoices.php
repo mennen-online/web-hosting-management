@@ -56,7 +56,7 @@ class SyncLexofficeInvoices extends Command
     {
         if ($this->voucherlistEndpoint->isLexofficeAvailable()) {
             Customer::all()->each(function($customer) {
-                $this->info("Process $customer->number");
+                $this->info("Import Invoices for $customer->number");
                 $this->processImportCustomer($customer);
             });
 
@@ -94,13 +94,11 @@ class SyncLexofficeInvoices extends Command
                     $result = $this->voucherlistEndpoint->setPage($page)->index();
                     if ($result) {
                         foreach ($result->content as $invoice) {
-                            $this->invoices->add([
-                                'customer' => $customer,
-                                'data' => $invoice
-                            ]);
+                            if($customer->invoices()->where('lexoffice_id', $invoice->id)->exists() === null) {
+                                $this->processInvoice($customer, $invoice);
+                            }
                         }
                     }
-
                     $page += 1;
                 } while ($result && $result->last === false);
             }
