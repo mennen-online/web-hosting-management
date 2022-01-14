@@ -38,9 +38,7 @@ class CreateSite implements ShouldQueue
     public function handle()
     {
         if($this->customerProduct->server === null) {
-            $this->fail([
-                new InvalidArgumentException('No Server available')
-            ]);
+            $this->fail(new InvalidArgumentException('No Server available'));
         }
         Log::info('Create Site using Forge API');
         $site = app()->make(SitesEndpoint::class)->create($this->customerProduct->server, $this->customerProduct->domain, [
@@ -53,6 +51,6 @@ class CreateSite implements ShouldQueue
 
         Log::info('Site Creation Response:' . json_encode($site));
 
-        CreateWordPressInstance::dispatch($this->customerProduct->server, $site->site->id);
+        CreateWordPressInstance::dispatch($this->customerProduct, $site->site->id);
     }
 }

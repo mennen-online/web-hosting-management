@@ -6,10 +6,16 @@ use App\Services\Lexoffice\Endpoints\ContactsEndpoint;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property User $user
+ */
 class Customer extends Model
 {
     use HasFactory;
 
+    /**
+     * @var string[]
+     */
     protected $fillable = [
         'id',
         'lexoffice_id',
@@ -23,20 +29,35 @@ class Customer extends Model
         'phone'
     ];
 
+    /**
+     * @var string[]
+     */
     protected $dates = [
         'created_at',
         'updated_at'
     ];
 
+    /**
+     * @var string[]
+     */
     protected $casts = [
         'company' => 'json'
     ];
 
+    /**
+     * @return void
+     */
     protected static function boot() {
         parent::boot();
 
         self::creating(function(Customer $customer) {
+            /**
+             * @phpstan-ignore-next-line
+             */
             if($customer->customer_type) {
+                /**
+                 * @phpstan-ignore-next-line
+                 */
                 $customer->lexoffice_id = match ($customer->customer_type) {
                     'company' => app()->make(ContactsEndpoint::class)->createCompanyContact($customer)->id,
                     'person' => app()->make(ContactsEndpoint::class)->createPersonContact($customer)->id,
@@ -45,9 +66,21 @@ class Customer extends Model
 
             if($customer->customer_type === 'company') {
                 $customer->company = [
+                    /**
+                     * @phpstan-ignore-next-line
+                     */
                     'allowTaxFreeInvoices' => $customer->allowTaxFreeInvoices,
+                    /**
+                     * @phpstan-ignore-next-line
+                     */
                     'name'                 => $customer->companyName,
+                    /**
+                     * @phpstan-ignore-next-line
+                     */
                     'taxNumber'            => $customer->taxNumber,
+                    /**
+                     * @phpstan-ignore-next-line
+                     */
                     'vatRegistrationId'    => $customer->vatRegistrationId
                 ];
             }
@@ -64,6 +97,9 @@ class Customer extends Model
 
         self::updating(function(Customer $customer) {
             if(!empty($customer->street_number) && !empty($customer->postcode) && !empty($customer->city) && !empty($customer->countryCode)) {
+                /**
+                 * @phpstan-ignore-next-line
+                 */
                 app()->make(ContactsEndpoint::class)->createOrUpdateCompanyBillingAddress($customer, $customer->supplement ?? '', $customer->street_number, $customer->postcode, $customer->city, $customer->countryCode);
             }
 
@@ -76,22 +112,37 @@ class Customer extends Model
         });
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function user() {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
     public function address() {
         return $this->hasOne(CustomerAddress::class);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function contacts() {
         return $this->hasMany(CustomerContact::class);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function products() {
         return $this->hasMany(CustomerProduct::class);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function invoices() {
         return $this->hasMany(CustomerInvoice::class);
     }

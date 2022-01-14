@@ -19,6 +19,9 @@ use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
 
+/**
+ * @property \App\Models\CustomerInvoice $resource
+ */
 class CustomerInvoice extends Resource
 {
     /**

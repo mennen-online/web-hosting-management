@@ -9,6 +9,9 @@ use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
+/**
+ * @property \App\Models\CustomerInvoicePosition $resource
+ */
 class CustomerInvoicePosition extends Resource
 {
     /**
@@ -34,6 +37,9 @@ class CustomerInvoicePosition extends Resource
         'name', 'description'
     ];
 
+    /**
+     * @var bool
+     */
     public static $displayInNavigation = false;
 
     /**

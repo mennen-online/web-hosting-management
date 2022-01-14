@@ -41,6 +41,9 @@ class Domain extends Resource
         'id', 'name'
     ];
 
+    /**
+     * @var bool
+     */
     public static $displayInNavigation = false;
 
     /**
@@ -67,6 +70,9 @@ class Domain extends Resource
                 if(!\App\Models\Product::where('description', 'LIKE', '%Domain%')->first()) {
                     Artisan::call('internetworx:domains:price:sync');
                 }
+                /**
+                 * @phpstan-ignore-next-line
+                 */
                 $tlds = \App\Models\Product::where('description', 'LIKE', '%Domain%')->get()->pluck('name')->map(function($tld) {
                     return '.'.$tld;
                 });
@@ -76,7 +82,7 @@ class Domain extends Resource
                     $price = $domainObject->getPrice($domain)[$status['domain']];
 
                     return [
-                        Currency::make(__('Price'), function() use($status, $price) {
+                        Currency::make(__('Price'), function() use($price) {
                             return number_format($price['price'], 2);
                         })->currency($price['currency'])->readonly(true),
                         Text::make(__('Price Information'), function() {

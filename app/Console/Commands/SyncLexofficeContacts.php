@@ -2,13 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Customer;
-use App\Models\User;
 use App\Models\Role;
+use App\Models\User;
 use App\Services\Lexoffice\Endpoints\ContactsEndpoint;
-use Illuminate\Support\Arr;
-use ErrorException;
 use Illuminate\Console\Command;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
 
 class SyncLexofficeContacts extends Command
@@ -45,8 +43,12 @@ class SyncLexofficeContacts extends Command
      *
      * @return int
      */
-    public function handle() {
+    public function handle()
+    {
         $this->contactsEndpoint = app()->make(ContactsEndpoint::class);
+        /**
+         * @phpstan-ignore-next-line
+         */
         $this->customerRole = Role::byName('Customer');
         $customers = collect();
         if ($this->contactsEndpoint->isLexofficeAvailable()) {
@@ -54,7 +56,7 @@ class SyncLexofficeContacts extends Command
             $results = $this->contactsEndpoint->setPageSize(500)->setPage($page)->index();
             if (property_exists($results, 'last')) {
                 do {
-                    $this->line("Processing Page ".$page, 'info');
+                    $this->line("Processing Page " . $page, 'info');
                     $page += 1;
                     if ($page > 0) {
                         collect($results->content)->filter(function ($contact) {
@@ -126,68 +128,68 @@ class SyncLexofficeContacts extends Command
                     }
                 })->first();
 
-                if ($contactPerson) {
+                if ($contactPerson && isset($contact) && isset($customer)) {
                     collect($contact->company->contactPersons)->each(function ($contactPerson) use ($customer) {
                         $customer->contacts()->create([
                             'salutation' => $contactPerson->salutation,
                             'first_name' => $contactPerson->firstName,
-                            'last_name'  => $contactPerson->lastName,
-                            'email'      => $contactPerson->emailAddress,
-                            'phone'      => $contactPerson->phoneNumber ?? "",
-                            'primary'    => $contactPerson->primary
+                            'last_name' => $contactPerson->lastName,
+                            'email' => $contactPerson->emailAddress,
+                            'phone' => $contactPerson->phoneNumber ?? "",
+                            'primary' => $contactPerson->primary
                         ]);
                     });
                 }
             }
         }
         if (property_exists($contact, 'person') && property_exists($contact, 'emailAddresses') && property_exists($contact, 'phoneNumbers')) {
-            try {
-                if (property_exists($contact->emailAddresses, 'business')) {
-                    $email = $contact->emailAddresses->business[0];
-                } elseif (property_exists($contact->emailAddresses, 'private')) {
-                    $email = $contact->emailAddresses->private[0];
-                }
-
-                if (property_exists($contact->phoneNumbers, 'business')) {
-                    $phone = $contact->phoneNumbers->business[0];
-                } elseif (property_exists($contact->phoneNumbers, 'private')) {
-                    $phone = $contact->phoneNumbers->private[0];
-                }
-            } catch (ErrorException $errorException) {
-                dd($contact);
+            if (property_exists($contact->emailAddresses, 'business')) {
+                $email = $contact->emailAddresses->business[0];
+            } elseif (property_exists($contact->emailAddresses, 'private')) {
+                $email = $contact->emailAddresses->private[0];
             }
-            $user = User::firstOrCreate([
-                'email' => $email
-            ], [
-                'first_name' => $contact->person->firstName,
-                'last_name'  => $contact->person->lastName,
-                'email'      => $email,
-                'password'   => Hash::make($email)
-            ]);
 
-            $customer = $user->customer()->firstOrCreate([
-                'lexoffice_id' => $contact->id,
-                'salutation'   => $contact->person->salutation,
-                'first_name'   => $contact->person->firstName,
-                'last_name'    => $contact->person->lastName,
-                'email'        => $contact->person->email ?? "",
-                'phone'        => $contact->person->phone ?? ""
-            ]);
+            if (property_exists($contact->phoneNumbers, 'business')) {
+                $phone = $contact->phoneNumbers->business[0];
+            } elseif (property_exists($contact->phoneNumbers, 'private')) {
+                $phone = $contact->phoneNumbers->private[0];
+            }
 
-            $customer->contacts()->firstOrCreate(
-                [
+            if(isset($email)) {
+
+                $user = User::firstOrCreate([
+                    'email' => $email
+                ], [
+                    'first_name' => $contact->person->firstName,
+                    'last_name' => $contact->person->lastName,
                     'email' => $email,
-                ],
-                [
+                    'password' => Hash::make($email)
+                ]);
+
+                $customer = $user->customer()->firstOrCreate([
+                    'lexoffice_id' => $contact->id,
                     'salutation' => $contact->person->salutation,
                     'first_name' => $contact->person->firstName,
-                    'last_name'  => $contact->person->lastName,
-                    'email'      => $email,
-                    'phone'      => $phone ?? ""
+                    'last_name' => $contact->person->lastName,
+                    'email' => $contact->person->email ?? "",
+                    'phone' => $contact->person->phone ?? ""
                 ]);
+
+                $customer->contacts()->firstOrCreate(
+                    [
+                        'email' => $email,
+                    ],
+                    [
+                        'salutation' => $contact->person->salutation,
+                        'first_name' => $contact->person->firstName,
+                        'last_name' => $contact->person->lastName,
+                        'email' => $email,
+                        'phone' => $phone ?? ""
+                    ]);
+            }
         }
 
-        if (isset($customer) && property_exists($contact, 'addresses') && property_exists($contact->addresses, 'billing') && Arr::has($contact->addresses->billing, 0)) {
+        if (isset($customer) && property_exists($contact, 'addresses') && property_exists($contact->addresses, 'billing') && Arr::has($contact->addresses->billing, "0")) {
             $address = $contact->addresses->billing[0];
             $customer->address()->create([
                 'type'         => 'billing',

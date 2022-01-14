@@ -11,11 +11,17 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use INWX\Domrobot;
 
+/**
+ *
+ */
 class Connector
 {
-    protected Domrobot $domrobot;
-
-    public function __construct() {
+    /**
+     * @throws BindingResolutionException
+     */
+    public function __construct(
+        protected Domrobot $domrobot
+    ) {
         $this->domrobot = app()->make(Domrobot::class);
 
         $this->domrobot->setLanguage('de')->useJson();
@@ -24,14 +30,18 @@ class Connector
         }else {
             $this->domrobot->useLive();
         }
-
-        return $this;
     }
 
+    /**
+     * @return bool
+     */
     public function isOte() {
         return $this->domrobot->isOte();
     }
 
+    /**
+     * @return void
+     */
     protected function prepareRequest() {
         if(config('internetworx.username') === null || config('internetworx.password') === null) {
             Log::warning('Please provide Internetworx Credentials');
@@ -43,7 +53,12 @@ class Connector
         }
     }
 
-    protected function processResponse($response, string $object): Collection|string {
+    /**
+     * @param array $response
+     * @param string $object
+     * @return Collection|string
+     */
+    protected function processResponse(array $response, string $object): Collection|string {
         $code = Arr::get($response, 'code');
         if(!Arr::has($response, 'resData.' . $object) && !Str::is([1000, 1001], $code)) {
             try {
@@ -52,7 +67,7 @@ class Connector
                 Log::error(json_encode($response));
             }catch(BindingResolutionException $bindingResolutionException) {
                 if($code === 2003) {
-                    throw new ValidationException('Internetworx Validation Error - Please Contact us');
+                    throw new InternetworxException('Internetworx Validation Error - Please Contact us');
                 }
                 return collect();
             }

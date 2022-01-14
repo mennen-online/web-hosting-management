@@ -34,7 +34,9 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
                 'last_name' => $lastName,
                 'email' => $email,
                 'password' => Hash::make($password)
-            ])->save();
+            ]);
+
+            $user->save();
 
             $role = Role::byName('Administrator');
 

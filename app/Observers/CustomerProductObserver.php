@@ -19,7 +19,7 @@ class CustomerProductObserver
      */
     public function created(CustomerProduct $customerProduct)
     {
-        if($customerProduct->domain && !app()->runningUnitTests()) {
+        if($customerProduct->domain->exists && !app()->runningUnitTests()) {
             $product = $customerProduct->product;
 
             if (class_exists($classname = 'App\\Services\\Product\\Models\\'.Str::kebab($product->name))) {
@@ -64,9 +64,7 @@ class CustomerProductObserver
      */
     public function deleted(CustomerProduct $customerProduct)
     {
-        if($domain = $customerProduct->domain) {
-            $domain->delete();
-        }
+        $customerProduct->domain->delete();
     }
 
     /**
@@ -77,9 +75,7 @@ class CustomerProductObserver
      */
     public function restored(CustomerProduct $customerProduct)
     {
-        if($domain = $customerProduct->domain) {
-            $domain->restore();
-        }
+        $customerProduct->domain->restore();
     }
 
     /**
@@ -90,8 +86,6 @@ class CustomerProductObserver
      */
     public function forceDeleted(CustomerProduct $customerProduct)
     {
-        if($domain = $customerProduct->domain) {
-            $domain->forceDelete();
-        }
+        $customerProduct->domain->forceDelete();
     }
 }

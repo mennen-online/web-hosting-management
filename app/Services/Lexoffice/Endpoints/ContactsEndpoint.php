@@ -88,9 +88,21 @@ class ContactsEndpoint extends Connector
             'version' => 0,
             'roles' => $role,
             'company' => [
+                /**
+                 * @phpstan-ignore-next-line
+                 */
                 'name' => $customer->companyName,
+                /**
+                 * @phpstan-ignore-next-line
+                 */
                 'allowTaxFreeInvoices' => $customer->allowTaxFreeInvoices ?? false,
+                /**
+                 * @phpstan-ignore-next-line
+                 */
                 'taxNumber' => $customer->taxNumber,
+                /**
+                 * @phpstan-ignore-next-line
+                 */
                 'vatRegistrationId' => Str::upper($customer->vatRegistrationId)
             ]
         ];
@@ -109,6 +121,9 @@ class ContactsEndpoint extends Connector
                 'firstName' => $customer->first_name,
                 'lastName' => $customer->last_name,
             ],
+            /**
+             * @phpstan-ignore-next-line
+             */
             'note' => $customer->note
         ];
 
@@ -125,8 +140,8 @@ class ContactsEndpoint extends Connector
         $originalData->company->contactPersons = [
             [
                 'salutation' => $customerContact->salutation,
-                'firstName' => $customerContact->firstName,
-                'lastName' => $customerContact->lastName,
+                'firstName' => $customerContact->first_name,
+                'lastName' => $customerContact->last_name,
                 'primary' => true,
                 'emailAddress' => $customerContact->email,
                 'phoneNumber' => $customerContact->phone

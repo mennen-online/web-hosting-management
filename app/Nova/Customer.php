@@ -2,7 +2,6 @@
 
 namespace App\Nova;
 
-use App\Services\Lexoffice\Endpoints\ContactsEndpoint;
 use Armincms\Fields\Chain;
 use Illuminate\Http\Request;
 use Laravel\Nova\Fields\BelongsTo;
@@ -11,9 +10,7 @@ use Laravel\Nova\Fields\HasOne;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
-use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Fields\Trix;
-use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
 
 class Customer extends Resource
@@ -89,7 +86,7 @@ class Customer extends Resource
                         Text::make(__('Nachname'), 'lastName'),
                         Trix::make(__('Notizen'), 'note')
                     ],
-                    null => []
+                    default => []
                 };
             })->showOnUpdating(false)->showOnCreating(true)
         ];
@@ -137,9 +134,5 @@ class Customer extends Resource
     public
     function actions(Request $request) {
         return [];
-    }
-
-    private function addressCanBeUpdated(object $customer) {
-        return (property_exists($customer, 'addresses') && property_exists($customer->addresses, 'billing') && count($customer->addresses->billing) > 1);
     }
 }

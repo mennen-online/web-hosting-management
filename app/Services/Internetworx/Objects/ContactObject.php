@@ -50,7 +50,7 @@ class ContactObject extends Connector
 
         $params['name'] = $contact->first_name . ' ' . $contact->last_name;
 
-        if($contact->customer->company) {
+        if ($contact->customer->company) {
             $params['org'] = $contactObject->company->name;
         }
 
@@ -60,30 +60,34 @@ class ContactObject extends Connector
             $address = Arr::first($contactObject->addresses->shipping);
         }
 
-        $params['street'] = $address->street;
-        $params['city'] = $address->city;
-        $params['pc'] = $address->zip;
-        $params['cc'] = $address->countryCode;
+        if (isset($address)) {
 
-        if(property_exists($contactObject, 'phoneNumbers')) {
-            if (property_exists($contactObject->phoneNumbers, 'business')) {
-                $params['voice'] = Arr::first($contactObject->phoneNumbers->business);
-            } elseif (property_exists($contactObject->phoneNumbers, 'office')) {
-                $params['voice'] = Arr::first($contactObject->phoneNumbers->office);
-            } elseif (property_exists($contactObject->phoneNumbers, 'mobile')) {
-                $params['voice'] = Arr::first($contactObject->phoneNumbers->mobile);
-            } elseif (property_exists($contactObject->phoneNumbers, 'private')) {
-                $params['voice'] = Arr::first($contactObject->phoneNumbers->private);
-            } elseif (property_exists($contactObject->phoneNumbers, 'fax')) {
-                $params['voice'] = Arr::first($contactObject->phoneNumbers->fax);
-            } elseif (property_exists($contactObject->phoneNumbers, 'other')) {
-                $params['voice'] = Arr::first($contactObject->phoneNumbers->other);
+            $params['street'] = $address->street;
+            $params['city'] = $address->city;
+            $params['pc'] = $address->zip;
+            $params['cc'] = $address->countryCode;
+
+            if (property_exists($contactObject, 'phoneNumbers')) {
+                if (property_exists($contactObject->phoneNumbers, 'business')) {
+                    $params['voice'] = Arr::first($contactObject->phoneNumbers->business);
+                } elseif (property_exists($contactObject->phoneNumbers, 'office')) {
+                    $params['voice'] = Arr::first($contactObject->phoneNumbers->office);
+                } elseif (property_exists($contactObject->phoneNumbers, 'mobile')) {
+                    $params['voice'] = Arr::first($contactObject->phoneNumbers->mobile);
+                } elseif (property_exists($contactObject->phoneNumbers, 'private')) {
+                    $params['voice'] = Arr::first($contactObject->phoneNumbers->private);
+                } elseif (property_exists($contactObject->phoneNumbers, 'fax')) {
+                    $params['voice'] = Arr::first($contactObject->phoneNumbers->fax);
+                } elseif (property_exists($contactObject->phoneNumbers, 'other')) {
+                    $params['voice'] = Arr::first($contactObject->phoneNumbers->other);
+                }
+            } else {
+                $params['voice'] = "+49.44017041719";
             }
-        }else {
-            $params['voice'] = "+49.44017041719";
-        }
 
-        $params['email'] = $contact->email;
+            $params['email'] = $contact->email;
+
+        }
 
         $response = $this->domrobot->call('contact', 'create', $params);
 

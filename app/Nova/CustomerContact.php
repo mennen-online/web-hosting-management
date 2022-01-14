@@ -9,6 +9,11 @@ use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
+/**
+ * @property string $salutation
+ * @property string $first_name
+ * @property string $last_name
+ */
 class CustomerContact extends Resource
 {
     /**

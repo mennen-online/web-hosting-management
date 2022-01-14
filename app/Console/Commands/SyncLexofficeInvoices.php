@@ -121,6 +121,9 @@ class SyncLexofficeInvoices extends Command
         collect($invoiceData->lineItems)->each(function ($position) use ($invoice) {
             if (Str::is(['custom', 'text'], $position->type)) {
                 $invoice->position()->create(
+                /**
+                 * @phpstan-ignore-next-line
+                 */
                     match ($position->type) {
                         'custom' => [
                             'type'                => $position->type,

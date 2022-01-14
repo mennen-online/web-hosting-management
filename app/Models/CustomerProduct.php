@@ -6,10 +6,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
+/**
+ * @property Domain $domain
+ * @property Product $product
+ * @property Server $server
+ * @property Customer $customer
+ */
 class CustomerProduct extends Model
 {
     use HasFactory;
 
+    /**
+     * @var string[]
+     */
     protected $fillable = [
         'customer_id',
         'product_id',
@@ -17,11 +26,17 @@ class CustomerProduct extends Model
         'domain_id'
     ];
 
+    /**
+     * @var string[]
+     */
     protected $dates = [
         'created_at',
         'updated_at'
     ];
 
+    /**
+     * @return void
+     */
     protected static function boot() {
         parent::boot();
 
@@ -47,22 +62,37 @@ class CustomerProduct extends Model
         });
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function customer() {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
     public function invoices() {
         return $this->belongsToMany(CustomerInvoice::class, 'customer_id', 'customer_id');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function product() {
         return $this->belongsTo(Product::class);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function server() {
         return $this->belongsTo(Server::class);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function domain() {
         return $this->belongsTo(Domain::class);
     }

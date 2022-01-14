@@ -6,10 +6,16 @@ use Cassandra\Custom;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ *
+ */
 class CustomerInvoice extends Model
 {
     use HasFactory;
 
+    /**
+     * @var string[]
+     */
     protected $fillable = [
         'lexoffice_id',
         'voucher_number',
@@ -21,11 +27,17 @@ class CustomerInvoice extends Model
         'customer_id'
     ];
 
+    /**
+     * @var string[]
+     */
     protected $dates = [
         'created_at',
         'updated_at'
     ];
 
+    /**
+     * @var string[]
+     */
     protected $casts = [
         'totalTaxAmount' => 'double',
         'totalGrossAmount' => 'double',
@@ -33,14 +45,23 @@ class CustomerInvoice extends Model
         'voucher_date' => 'date'
     ];
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function customer() {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function products() {
         return $this->hasMany(CustomerProduct::class, 'customer_id', 'customer_id');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function position() {
         return $this->hasMany(CustomerInvoicePosition::class);
     }

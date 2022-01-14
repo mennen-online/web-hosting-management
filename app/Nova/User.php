@@ -15,6 +15,11 @@ use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Panel;
 
+/**
+ * @property string $first_name
+ * @property string $last_name
+ * @property \App\Models\User $resource
+ */
 class User extends Resource
 {
     /**
@@ -24,6 +29,9 @@ class User extends Resource
      */
     public static string $model = \App\Models\User::class;
 
+    /**
+     * @var string[]
+     */
     public static $with = ['roles'];
 
     /**
@@ -113,14 +121,21 @@ class User extends Resource
         return [];
     }
 
+    /**
+     * @return string
+     */
     public function title() {
         return $this->first_name . ' ' . $this->last_name;
     }
 
+    /**
+     * @param string|null $relation
+     * @return bool|mixed
+     */
     private function hasCustomerAndRelation(?string $relation = null) {
         if($relation === null) {
             return $this->resource->customer;
         }
-        return $this->resource->customer && $this->resource->customer->$relation()->count() !== 0;
+        return $this->resource->customer->exists && $this->resource->customer->$relation()->count() !== 0;
     }
 }

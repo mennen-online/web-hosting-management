@@ -12,6 +12,6 @@ class WordPressEndpoint extends Connector
     }
 
     public function uninstall(Server $server, int $siteId) {
-        return $this->deleteRequest('/servers/' . $server->force_id . '/sites/' . $siteId . '/wordpress', null);
+        return $this->deleteRequest('/servers/' . $server->forge_id . '/sites/' . $siteId . '/wordpress', null);
     }
 }
