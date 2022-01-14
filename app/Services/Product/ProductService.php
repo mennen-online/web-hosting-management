@@ -2,7 +2,6 @@
 
 namespace App\Services\Product;
 
-use App\Jobs\Forge\CreateServer;
 use App\Models\CustomerProduct;
 use App\Models\Product;
 use App\Services\Forge\Endpoints\ServersEndpoint;
@@ -17,22 +16,24 @@ class ProductService
         protected CustomerProduct $customerProduct,
         protected string $className = "",
         protected bool $exists = false
-
     ) {
         $this->className = 'App\\Services\\Product\\Models\\' . Str::ucfirst(Str::camel($this->product->name));
         $this->exists = class_exists($this->className);
     }
 
-    public function productExists(): bool {
+    public function productExists(): bool
+    {
         return $this->exists;
     }
 
-    public function getProductCallName(): string {
+    public function getProductCallName(): string
+    {
         return $this->className;
     }
 
-    public function install(){
-        if($this->exists) {
+    public function install()
+    {
+        if ($this->exists) {
             $productClass = new $this->className(
                 $this->customerProduct,
                 app()->make(ServersEndpoint::class),

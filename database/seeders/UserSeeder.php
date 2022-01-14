@@ -18,9 +18,7 @@ class UserSeeder extends Seeder
     {
         $administratorRole = Role::byName('Administrator');
 
-        $administrator = User::factory()->create([
-            'email' => 'admin@nova.com'
-        ]);
+        $administrator = User::factory()->customer()->create();
 
         $administrator->roles()->attach($administratorRole);
 

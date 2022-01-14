@@ -3,11 +3,9 @@
 namespace App\Jobs\Internetworx;
 
 use App\Models\Domain;
-use App\Models\User;
 use App\Notifications\Customer\DomainRegistrationSuccessful;
 use App\Services\Internetworx\Objects\DomainObject;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -24,8 +22,7 @@ class CreateDomain implements ShouldQueue
      */
     public function __construct(
         protected Domain $domain
-    )
-    {
+    ) {
         //
     }
 
@@ -40,7 +37,7 @@ class CreateDomain implements ShouldQueue
 
         $this->domain->refresh();
 
-        if($this->domain->registrar_id !== null) {
+        if ($this->domain->registrar_id !== null) {
             $this->domain->customerProduct->customer->user->notify(new DomainRegistrationSuccessful($this->domain));
         }
     }

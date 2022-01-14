@@ -3,8 +3,12 @@
 namespace App\Console\Commands;
 
 use App\Models\Customer;
+use App\Models\CustomerInvoice;
+use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use App\Services\Lexoffice\Endpoints\VoucherlistEndpoint;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 class SyncLexofficeInvoices extends Command
 {
@@ -29,7 +33,8 @@ class SyncLexofficeInvoices extends Command
      *
      * @return void
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
 
         $this->voucherlistEndpoint = app()->make(VoucherlistEndpoint::class);
@@ -40,10 +45,11 @@ class SyncLexofficeInvoices extends Command
      *
      * @return int
      */
-    public function handle() {
+    public function handle()
+    {
         if ($this->voucherlistEndpoint->isLexofficeAvailable()) {
-            $customers = Customer::all()->filter(function($customer) {
-                if($customer->invoices()->first() === null) {
+            $customers = Customer::all()->filter(function ($customer) {
+                if ($customer->invoices()->first() === null) {
                     return $customer;
                 }
             });
@@ -54,22 +60,22 @@ class SyncLexofficeInvoices extends Command
         return 0;
     }
 
-    private function processImportCustomer($customer) {
+    private function processImportCustomer($customer)
+    {
         $customerInvoices = collect();
         foreach ([
-            'draft',
-            'open',
-            'overdue',
-            'paid',
-            'paidoff',
-            'voided',
-            'transferred',
-            'sepadebit'
-        ] as $voucherStatus) {
+                     'open',
+                     'overdue',
+                     'paid',
+                     'paidoff',
+                     'voided',
+                     'transferred',
+                     'sepadebit'
+                 ] as $voucherStatus) {
             foreach ([
-                'invoice',
-                'creditnote'
-            ] as $voucherType) {
+                         'invoice',
+                         'creditnote'
+                     ] as $voucherType) {
                 $this->voucherlistEndpoint->setVoucherType($voucherType);
                 $this->voucherlistEndpoint->setContactId($customer->lexoffice_id);
                 $this->voucherlistEndpoint->setVoucherStatus($voucherStatus);
@@ -80,14 +86,14 @@ class SyncLexofficeInvoices extends Command
 
                 do {
                     $result = $this->voucherlistEndpoint->setPage($page)->index();
-                    if($result) {
+                    if ($result) {
                         foreach ($result->content as $invoice) {
                             $customerInvoices->add($invoice);
                         }
                     }
 
                     $page += 1;
-                } while ($result &&$result->last === false);
+                } while ($result && $result->last === false);
             }
         }
 
@@ -100,11 +106,42 @@ class SyncLexofficeInvoices extends Command
         }
     }
 
-    private
-    function processInvoice($customer, $invoice) {
-        $this->info('Processing Invoice '.$invoice->voucherNumber);
-        $customer->invoices()->firstOrCreate([
-            'lexoffice_id' => $invoice->id
+    private function processInvoice($customer, $invoice)
+    {
+        $this->info('Processing Invoice ' . $invoice->voucherNumber);
+
+        $invoiceData = app()->make(InvoicesEndpoint::class)->get(new CustomerInvoice(['lexoffice_id' => $invoice->id]));
+
+        $invoice = $customer->invoices()->firstOrCreate([
+            'lexoffice_id'          => $invoice->id,
+            'voucher_number'        => $invoice->voucherNumber,
+            'voucher_date'          => $invoice->voucherDate,
+            'total_net_amount'      => $invoiceData->totalPrice->totalNetAmount,
+            'total_gross_amount'    => $invoiceData->totalPrice->totalGrossAmount,
+            'total_tax_amount'      => $invoiceData->totalPrice->totalTaxAmount,
+            'payment_term_duration' => $invoiceData->paymentConditions->paymentTermDuration
         ]);
+
+        collect($invoiceData->lineItems)->each(function ($position) use ($invoice) {
+            if (Str::is(['custom', 'text'], $position->type)) {
+                $invoice->position()->create(match ($position->type) {
+                    'custom' => [
+                        'type'                => $position->type,
+                        'name'                => $position->name,
+                        'unit_name'           => $position->unitName,
+                        'currency'            => $position->unitPrice->currency,
+                        'net_amount'          => $position->unitPrice->netAmount,
+                        'tax_rate_percentage' => $position->unitPrice->taxRatePercentage,
+                        'discount_percentage' => $position->discountPercentage
+                    ],
+                    'text'   => [
+                        'type'        => $position->type,
+                        'name'        => $position->name,
+                        'description' => $position->description
+                    ],
+                    default => []
+                });
+            }
+        });
     }
 }

@@ -2,15 +2,9 @@
 
 namespace App\Nova;
 
-use App\Models\Domain;
 use App\Nova\Actions\CustomerProduct\InstallCustomerProduct;
-use App\Services\Forge\Endpoints\ServersEndpoint;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Laravel\Nova\Fields\BelongsTo;
-use Laravel\Nova\Fields\ID;
-use Laravel\Nova\Fields\Select;
-use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Http\Requests\NovaRequest;
 
 class CustomerProduct extends Resource
@@ -41,7 +35,7 @@ class CustomerProduct extends Resource
     /**
      * Get the fields displayed by the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
     public function fields(Request $request)
@@ -57,7 +51,7 @@ class CustomerProduct extends Resource
     /**
      * Get the cards available for the request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
     public function cards(Request $request)
@@ -68,7 +62,7 @@ class CustomerProduct extends Resource
     /**
      * Get the filters available for the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
     public function filters(Request $request)
@@ -79,7 +73,7 @@ class CustomerProduct extends Resource
     /**
      * Get the lenses available for the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
     public function lenses(Request $request)
@@ -90,7 +84,7 @@ class CustomerProduct extends Resource
     /**
      * Get the actions available for the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
     public function actions(Request $request)
@@ -100,7 +94,8 @@ class CustomerProduct extends Resource
         ];
     }
 
-    public static function relatableProducts(NovaRequest $request, $query) {
+    public static function relatableProducts(NovaRequest $request, $query)
+    {
         return $query->where('description', 'NOT LIKE', '%Domain%');
     }
 }

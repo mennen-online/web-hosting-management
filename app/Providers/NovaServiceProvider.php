@@ -21,25 +21,32 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     {
         parent::boot();
 
-        Nova::createUserUsing(function($command) {
-            return [
-                $command->ask('First Name'),
-                $command->ask('Last Name'),
-                $command->ask('Email Address'),
-                $command->secret('Password')
-            ];
-        }, function($firstName, $lastName, $email, $password) {
-            $user = (new User)->forceFill([
-                'first_name' => $firstName,
-                'last_name' => $lastName,
-                'email' => $email,
-                'password' => Hash::make($password)
-            ])->save();
+        Nova::createUserUsing(
+            function ($command) {
+                return [
+                    $command->ask('First Name'),
+                    $command->ask('Last Name'),
+                    $command->ask('Email Address'),
+                    $command->secret('Password')
+                ];
+            },
+            function ($firstName, $lastName, $email, $password) {
+                $user = (new User)->forceFill(
+                    [
+                        'first_name' => $firstName,
+                        'last_name' => $lastName,
+                        'email' => $email,
+                        'password' => Hash::make($password)
+                    ]
+                );
 
-            $role = Role::byName('Administrator');
+                $user->save();
 
-            $user->roles()->attach($role);
-        });
+                $role = Role::byName('Administrator');
+
+                $user->roles()->attach($role);
+            }
+        );
     }
 
     /**
@@ -50,9 +57,9 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
     protected function routes()
     {
         Nova::routes()
-                ->withAuthenticationRoutes()
-                ->withPasswordResetRoutes()
-                ->register();
+            ->withAuthenticationRoutes()
+            ->withPasswordResetRoutes()
+            ->register();
     }
 
     /**
@@ -64,11 +71,18 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
      */
     protected function gate()
     {
-        Gate::define('viewNova', function ($user) {
-            return $user->roles()->whereIn('name', [
-                'Administrator', 'Accounting'
-            ])->first();
-        });
+        Gate::define(
+            'viewNova',
+            function ($user) {
+                return $user->roles()->whereIn(
+                    'name',
+                    [
+                        'Administrator',
+                        'Accounting'
+                    ]
+                )->first();
+            }
+        );
     }
 
     /**

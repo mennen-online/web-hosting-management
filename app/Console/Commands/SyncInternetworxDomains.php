@@ -33,7 +33,8 @@ class SyncInternetworxDomains extends Command
      *
      * @return void
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
     }
 
@@ -42,43 +43,50 @@ class SyncInternetworxDomains extends Command
      *
      * @return int
      */
-    public function handle() {
+    public function handle()
+    {
         config()->set('app.env', 'production');
 
         $this->domainObject = app()->make(DomainObject::class);
 
         $this->contactObject = app()->make(ContactObject::class);
 
-        $this->withProgressBar($this->domainObject->index(0, 5000), function($domain) {
-            $newDomain = Domain::firstOrCreate(
-                [
-                    'name' => $domain['domain']
-                ], [
-                'registrar_id' => $domain['roId']
-            ]);
-            $contactId = $domain['registrant'];
-
-            $contact = $this->contactObject->index(1, 1, $contactId)[0];
-
-            $user = User::where('email', $contact['email'])->first();
-
-            if($user === null) {
-                $newDomain->delete();
-            }else {
-                $user->customerProducts()->updateOrCreate(
+        $this->withProgressBar(
+            $this->domainObject->index(0, 5000),
+            function ($domain) {
+                $newDomain = Domain::firstOrCreate(
                     [
-                        'customer_id' => $user->customer->id,
-                        'domain_id'   => $newDomain->id,
+                        'name' => $domain['domain']
                     ],
                     [
-                        'customer_id' => $user->customer->id,
-                        'domain_id'   => $newDomain->id,
-                        'product_id'  => null,
-                        'server_id'   => null,
-                        'active'      => true
-                    ]);
+                        'registrar_id' => $domain['roId']
+                    ]
+                );
+                $contactId = $domain['registrant'];
+
+                $contact = $this->contactObject->index(1, 1, $contactId)[0];
+
+                $user = User::where('email', $contact['email'])->first();
+
+                if ($user === null) {
+                    $newDomain->delete();
+                } else {
+                    $user->customerProducts()->updateOrCreate(
+                        [
+                            'customer_id' => $user->customer->id,
+                            'domain_id' => $newDomain->id,
+                        ],
+                        [
+                            'customer_id' => $user->customer->id,
+                            'domain_id' => $newDomain->id,
+                            'product_id' => null,
+                            'server_id' => null,
+                            'active' => true
+                        ]
+                    );
+                }
             }
-        });
+        );
 
         return 0;
     }

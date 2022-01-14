@@ -26,7 +26,7 @@ class RoleSeeder extends Seeder
 
 
 
-        Permission::all()->each(function($permission) use($administrator) {
+        Permission::all()->each(function ($permission) use ($administrator) {
             $permission->roles()->attach($administrator);
         });
 
@@ -38,7 +38,7 @@ class RoleSeeder extends Seeder
             'view-' . User::class,
             'store-' . CustomerProduct::class,
             'delete-' . CustomerProduct::class
-        ])->get()->each(function($permission) use($customer) {
+        ])->get()->each(function ($permission) use ($customer) {
             $permission->roles()->attach($customer);
         });
     }

@@ -24,7 +24,8 @@ class Product extends Model
         'price' => 'double'
     ];
 
-    public function customerProduct() {
+    public function customerProduct()
+    {
         return $this->hasMany(CustomerProduct::class);
     }
 }

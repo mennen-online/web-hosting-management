@@ -4,7 +4,6 @@ namespace App\Services\Lexoffice\Endpoints;
 
 use App\Services\Lexoffice\Connector;
 use Carbon\Carbon;
-use Illuminate\Support\Arr;
 
 class VoucherlistEndpoint extends Connector
 {
@@ -29,76 +28,87 @@ class VoucherlistEndpoint extends Connector
     protected ?Carbon $updatedDateTo = null;
 
     /**
-     * @param  string  $voucherType
+     * @param string $voucherType
      */
-    public function setVoucherType(string $voucherType): void {
+    public function setVoucherType(string $voucherType): void
+    {
         $this->voucherType = $voucherType;
     }
 
     /**
-     * @param  string  $voucherStatus
+     * @param string $voucherStatus
      */
-    public function setVoucherStatus(string $voucherStatus): void {
+    public function setVoucherStatus(string $voucherStatus): void
+    {
         $this->voucherStatus = $voucherStatus;
     }
 
     /**
-     * @param  bool  $archived
+     * @param bool $archived
      */
-    public function setArchived(bool $archived): void {
+    public function setArchived(bool $archived): void
+    {
         $this->archived = $archived;
     }
 
     /**
-     * @param  string  $contactId
+     * @param string $contactId
      */
-    public function setContactId(string $contactId): void {
+    public function setContactId(string $contactId): void
+    {
         $this->contactId = $contactId;
     }
 
     /**
-     * @param  string  $voucherDateFrom
+     * @param string $voucherDateFrom
      */
-    public function setVoucherDateFrom(string $voucherDateFrom): void {
+    public function setVoucherDateFrom(string $voucherDateFrom): void
+    {
         $this->voucherDateFrom = Carbon::parse($voucherDateFrom);
     }
 
     /**
-     * @param  string  $voucherDateTo
+     * @param string $voucherDateTo
      */
-    public function setVoucherDateTo(string $voucherDateTo): void {
+    public function setVoucherDateTo(string $voucherDateTo): void
+    {
         $this->voucherDateTo = Carbon::parse($voucherDateTo);
     }
 
     /**
-     * @param  string  $createdDateFrom
+     * @param string $createdDateFrom
      */
-    public function setCreatedDateFrom(string $createdDateFrom): void {
+    public function setCreatedDateFrom(string $createdDateFrom): void
+    {
         $this->createdDateFrom = Carbon::parse($createdDateFrom);
     }
 
     /**
-     * @param  string  $createdDateTo
+     * @param string $createdDateTo
      */
-    public function setCreatedDateTo(string $createdDateTo): void {
+    public function setCreatedDateTo(string $createdDateTo): void
+    {
         $this->createdDateTo = Carbon::parse($createdDateTo);
     }
 
     /**
-     * @param  string  $updatedDateFrom
+     * @param string $updatedDateFrom
      */
-    public function setUpdatedDateFrom(string $updatedDateFrom): void {
+    public function setUpdatedDateFrom(string $updatedDateFrom): void
+    {
         $this->updatedDateFrom = Carbon::parse($updatedDateFrom);
     }
 
     /**
-     * @param  string  $updatedDateTo
+     * @param string $updatedDateTo
      */
-    public function setUpdatedDateTo(string $updatedDateTo): void {
+    public function setUpdatedDateTo(string $updatedDateTo): void
+    {
         $this->updatedDateTo = Carbon::parse($updatedDateTo);
     }
 
-    public function index() {
+    public function index()
+    {
         $query = [];
 
         if ($this->voucherType) {
@@ -141,10 +151,6 @@ class VoucherlistEndpoint extends Connector
             $query['updatedDateTo'] = $this->updatedDateTo->format('Y-m-d');
         }
 
-        $response = $this->getRequest('/voucherlist?', $query);
-
-        if ($response->ok()) {
-            return $response->object();
-        }
+        return $this->getRequest('/voucherlist?', $query);
     }
 }

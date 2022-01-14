@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Customer;
+use App\Models\CustomerAddress;
 use App\Models\CustomerContact;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -24,23 +25,26 @@ class CustomerFactory extends Factory
      */
     public function definition()
     {
-        $user = User::factory()->create();
         return [
-            'user_id' => $user->id,
             'customer_type' => 'person',
             'salutation' => '',
-            'firstName' => $user->first_name,
-            'lastName' => $user->last_name
+            'first_name' => $this->faker->firstName,
+            'last_name' => $this->faker->lastName,
+            'email' => $this->faker->safeEmail,
         ];
     }
 
-    public function configure() {
-        return $this->afterCreating(function(Customer $customer) {
-            $customer->update([
-                'street_number' => 'Teststraße 123',
-                'postcode' => '12345',
-                'city' => 'Testort',
-                'countryCode' => 'DE'
+    public function configure()
+    {
+        return $this->afterCreating(function (Customer $customer) {
+            CustomerAddress::factory()->create([
+                'customer_id' => $customer->id,
+                'type' => 'billing',
+                'street' => $this->faker->streetAddress,
+                'supplement' => '',
+                'zip' => $this->faker->postcode,
+                'city' => $this->faker->city,
+                'country_code' => $this->faker->countryCode
             ]);
 
             $customer = Customer::find($customer->id);

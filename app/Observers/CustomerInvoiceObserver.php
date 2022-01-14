@@ -10,18 +10,20 @@ class CustomerInvoiceObserver
     /**
      * Handle the CustomerInvoice "created" event.
      *
-     * @param  \App\Models\CustomerInvoice  $customerInvoice
+     * @param \App\Models\CustomerInvoice $customerInvoice
      * @return void
      */
     public function created(CustomerInvoice $customerInvoice)
     {
-        $customerInvoice->customer->user->notify(new InvoiceCreatedNotification($customerInvoice));
+        if (!app()->runningInConsole()) {
+            $customerInvoice->customer->user->notify(new InvoiceCreatedNotification($customerInvoice));
+        }
     }
 
     /**
      * Handle the CustomerInvoice "updated" event.
      *
-     * @param  \App\Models\CustomerInvoice  $customerInvoice
+     * @param \App\Models\CustomerInvoice $customerInvoice
      * @return void
      */
     public function updated(CustomerInvoice $customerInvoice)
@@ -32,7 +34,7 @@ class CustomerInvoiceObserver
     /**
      * Handle the CustomerInvoice "deleted" event.
      *
-     * @param  \App\Models\CustomerInvoice  $customerInvoice
+     * @param \App\Models\CustomerInvoice $customerInvoice
      * @return void
      */
     public function deleted(CustomerInvoice $customerInvoice)
@@ -43,7 +45,7 @@ class CustomerInvoiceObserver
     /**
      * Handle the CustomerInvoice "restored" event.
      *
-     * @param  \App\Models\CustomerInvoice  $customerInvoice
+     * @param \App\Models\CustomerInvoice $customerInvoice
      * @return void
      */
     public function restored(CustomerInvoice $customerInvoice)
@@ -54,7 +56,7 @@ class CustomerInvoiceObserver
     /**
      * Handle the CustomerInvoice "force deleted" event.
      *
-     * @param  \App\Models\CustomerInvoice  $customerInvoice
+     * @param \App\Models\CustomerInvoice $customerInvoice
      * @return void
      */
     public function forceDeleted(CustomerInvoice $customerInvoice)

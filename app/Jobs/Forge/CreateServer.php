@@ -2,14 +2,12 @@
 
 namespace App\Jobs\Forge;
 
-use App\Jobs\Internetworx\UpdateDns;
 use App\Models\CustomerProduct;
 use App\Models\Server;
 use App\Services\Forge\Endpoints\CredentialsEndpoint;
 use App\Services\Forge\Endpoints\RegionsEndpoint;
 use App\Services\Forge\Endpoints\ServersEndpoint;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -44,22 +42,26 @@ class CreateServer implements ShouldQueue
         $sizes = collect($region->sizes);
         $size = $sizes->first();
         Log::info('Request Server Creation at Hetzner Cloud');
-        $serverObject = app()->make(ServersEndpoint::class)->create([
-            'provider' => 'hetzner',
-            'name' => $this->customerProduct->domain->name,
-            'region' => $region->id,
-            'size' => $size->id,
-            'type' => 'app',
-            'credential_id' => collect($credentials)->first()->id,
-            'php_version' => 'php74',
-            'database_type' => 'mysql8'
-        ]);
+        $serverObject = app()->make(ServersEndpoint::class)->create(
+            [
+                'provider' => 'hetzner',
+                'name' => $this->customerProduct->domain->name,
+                'region' => $region->id,
+                'size' => $size->id,
+                'type' => 'app',
+                'credential_id' => collect($credentials)->first()->id,
+                'php_version' => 'php74',
+                'database_type' => 'mysql8'
+            ]
+        );
         Log::info('Server Created');
         Log::info(json_encode($serverObject));
 
-        $server = Server::create([
-            'forge_id' => $serverObject->server->id
-        ]);
+        $server = Server::create(
+            [
+                'forge_id' => $serverObject->server->id
+            ]
+        );
 
         $this->customerProduct->update(['server_id' => $server->id]);
     }
