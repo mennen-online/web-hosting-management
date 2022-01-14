@@ -46,7 +46,6 @@ class SyncLexofficeContacts extends Command
      */
     public function handle()
     {
-        ini_set('MEMORY_LIMIT', -1);
         $this->contactsEndpoint = app()->make(ContactsEndpoint::class);
         /**
          * @phpstan-ignore-next-line
@@ -175,8 +174,7 @@ class SyncLexofficeContacts extends Command
                         'last_name'    => $contact->person->lastName,
                         'email'        => $contact->person->email ?? "",
                         'phone'        => $contact->person->phone ?? ""
-                    ]
-                );
+                    ]);
 
                 $customer->contacts()->firstOrCreate(
                     [
@@ -205,8 +203,7 @@ class SyncLexofficeContacts extends Command
                     'zip'          => $address->zip ?? '',
                     'city'         => $address->city ?? '',
                     'country_code' => $address->countryCode ?? ''
-                ]
-            );
+                ]);
         }
     }
 }

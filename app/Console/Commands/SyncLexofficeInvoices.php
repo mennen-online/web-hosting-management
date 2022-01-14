@@ -100,7 +100,8 @@ class SyncLexofficeInvoices extends Command
     private function processInvoice($customer, $invoice)
     {
         try {
-            $invoiceData = app()->make(InvoicesEndpoint::class)->get(new CustomerInvoice(['lexoffice_id' => $invoice->id]));
+            $invoiceData = app()->make(InvoicesEndpoint::class)
+                ->get(new CustomerInvoice(['lexoffice_id' => $invoice->id]));
 
             $invoice = $customer->invoices()->firstOrCreate([
                 'lexoffice_id'          => $invoice->id,
@@ -112,8 +113,8 @@ class SyncLexofficeInvoices extends Command
                 'payment_term_duration' => $invoiceData->paymentConditions->paymentTermDuration
             ]);
 
-            if($invoice->position()->count() !== count($invoiceData->lineItems)) {
-                $invoice->position()->each(function($position) {
+            if ($invoice->position()->count() !== count($invoiceData->lineItems)) {
+                $invoice->position()->each(function ($position) {
                     $position->delete();
                 });
 
@@ -139,7 +140,7 @@ class SyncLexofficeInvoices extends Command
                     }
                 });
             }
-        }catch(LexofficeException $lexofficeException) {
+        } catch (LexofficeException $lexofficeException) {
             Log::error($lexofficeException->getMessage());
         }
     }
