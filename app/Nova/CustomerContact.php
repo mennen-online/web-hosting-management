@@ -7,7 +7,6 @@ use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
-use Laravel\Nova\Http\Requests\NovaRequest;
 
 /**
  * @property string $salutation
@@ -43,19 +42,22 @@ class CustomerContact extends Resource
     /**
      * Get the fields displayed by the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public function fields(Request $request) {
+    public function fields(Request $request)
+    {
         return [
             BelongsTo::make(__('Customer'))->searchable(),
             ID::make(__('ID'), 'id')->sortable(),
-            Select::make(__('Salutation'))->options([
-                ''       => 'Keine Anrede',
-                'Herr'   => 'Herr',
-                'Frau'   => 'Frau',
-                'Divers' => 'Divers'
-            ]),
+            Select::make(__('Salutation'))->options(
+                [
+                    '' => 'Keine Anrede',
+                    'Herr' => 'Herr',
+                    'Frau' => 'Frau',
+                    'Divers' => 'Divers'
+                ]
+            ),
             Text::make(__('First Name'), 'first_name'),
             Text::make(__('Last Name'), 'last_name'),
             Text::make(__('Email'), 'email'),
@@ -66,49 +68,49 @@ class CustomerContact extends Resource
     /**
      * Get the cards available for the request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public
-    function cards(Request $request) {
+    public function cards(Request $request)
+    {
         return [];
     }
 
     /**
      * Get the filters available for the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public
-    function filters(Request $request) {
+    public function filters(Request $request)
+    {
         return [];
     }
 
     /**
      * Get the lenses available for the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public
-    function lenses(Request $request) {
+    public function lenses(Request $request)
+    {
         return [];
     }
 
     /**
      * Get the actions available for the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public
-    function actions(Request $request) {
+    public function actions(Request $request)
+    {
         return [];
     }
 
-    public
-    function title() {
-        return $this->salutation.' '.$this->first_name.' '.$this->last_name;
+    public function title()
+    {
+        return $this->salutation . ' ' . $this->first_name . ' ' . $this->last_name;
     }
 }

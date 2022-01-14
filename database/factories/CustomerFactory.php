@@ -34,8 +34,9 @@ class CustomerFactory extends Factory
         ];
     }
 
-    public function configure() {
-        return $this->afterCreating(function(Customer $customer) {
+    public function configure()
+    {
+        return $this->afterCreating(function (Customer $customer) {
             CustomerAddress::factory()->create([
                 'customer_id' => $customer->id,
                 'type' => 'billing',

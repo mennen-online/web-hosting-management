@@ -34,7 +34,8 @@ class SyncLexofficeContacts extends Command
      *
      * @return void
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
     }
 
@@ -59,40 +60,54 @@ class SyncLexofficeContacts extends Command
                     $this->line("Processing Page " . $page, 'info');
                     $page += 1;
                     if ($page > 0) {
-                        collect($results->content)->filter(function ($contact) {
-                            if (property_exists($contact->roles, 'customer')) {
-                                return $contact;
+                        collect($results->content)->filter(
+                            function ($contact) {
+                                if (property_exists($contact->roles, 'customer')) {
+                                    return $contact;
+                                }
                             }
-                        })->each(function ($contact) use ($customers) {
-                            $customers->add($contact);
-                        });
+                        )->each(
+                            function ($contact) use ($customers) {
+                                $customers->add($contact);
+                            }
+                        );
                     }
                 } while ($results->last === false);
             } else {
-                $results->filter(function ($contact) {
-                    if (property_exists($contact->roles, 'customer')) {
-                        return $contact;
+                $results->filter(
+                    function ($contact) {
+                        if (property_exists($contact->roles, 'customer')) {
+                            return $contact;
+                        }
                     }
-                })->each(function ($contact) use ($customers) {
-                    $customers->add($contact);
-                });
+                )->each(
+                    function ($contact) use ($customers) {
+                        $customers->add($contact);
+                    }
+                );
             }
-            $this->withProgressBar($customers, function ($contact) {
-                $this->processContact($contact);
-            });
+            $this->withProgressBar(
+                $customers,
+                function ($contact) {
+                    $this->processContact($contact);
+                }
+            );
             return 0;
         }
         $this->error('Lexoffice is not active');
         return 0;
     }
 
-    private function processContact($contact) {
+    private function processContact($contact)
+    {
         if (property_exists($contact, 'company') && property_exists($contact->company, 'contactPersons')) {
-            $contactPerson = collect($contact->company->contactPersons)->filter(function ($contactPerson) {
-                if ($contactPerson->primary) {
-                    return $contactPerson;
+            $contactPerson = collect($contact->company->contactPersons)->filter(
+                function ($contactPerson) {
+                    if ($contactPerson->primary) {
+                        return $contactPerson;
+                    }
                 }
-            })->first();
+            )->first();
 
             if ($contactPerson) {
                 $user = User::firstOrCreate(
@@ -100,11 +115,12 @@ class SyncLexofficeContacts extends Command
                         'email' => $contactPerson->emailAddress,
                     ],
                     [
-                        'email'      => $contactPerson->emailAddress,
+                        'email' => $contactPerson->emailAddress,
                         'first_name' => $contactPerson->firstName,
-                        'last_name'  => $contactPerson->lastName,
-                        'password'   => Hash::make($contactPerson->emailAddress)
-                    ]);
+                        'last_name' => $contactPerson->lastName,
+                        'password' => Hash::make($contactPerson->emailAddress)
+                    ]
+                );
 
                 $user->roles()->using($this->customerRole);
 
@@ -122,27 +138,35 @@ class SyncLexofficeContacts extends Command
             }
 
             if (property_exists($contact->company, 'contactPersons')) {
-                $contactPerson = collect($contact->company->contactPersons)->filter(function ($contactPerson) {
-                    if ($contactPerson->primary) {
-                        return $contactPerson;
+                $contactPerson = collect($contact->company->contactPersons)->filter(
+                    function ($contactPerson) {
+                        if ($contactPerson->primary) {
+                            return $contactPerson;
+                        }
                     }
-                })->first();
+                )->first();
 
                 if ($contactPerson && isset($contact) && isset($customer)) {
-                    collect($contact->company->contactPersons)->each(function ($contactPerson) use ($customer) {
-                        $customer->contacts()->create([
-                            'salutation' => $contactPerson->salutation,
-                            'first_name' => $contactPerson->firstName,
-                            'last_name' => $contactPerson->lastName,
-                            'email' => $contactPerson->emailAddress,
-                            'phone' => $contactPerson->phoneNumber ?? "",
-                            'primary' => $contactPerson->primary
-                        ]);
-                    });
+                    collect($contact->company->contactPersons)->each(
+                        function ($contactPerson) use ($customer) {
+                            $customer->contacts()->create(
+                                [
+                                    'salutation' => $contactPerson->salutation,
+                                    'first_name' => $contactPerson->firstName,
+                                    'last_name' => $contactPerson->lastName,
+                                    'email' => $contactPerson->emailAddress,
+                                    'phone' => $contactPerson->phoneNumber ?? "",
+                                    'primary' => $contactPerson->primary
+                                ]
+                            );
+                        }
+                    );
                 }
             }
         }
-        if (property_exists($contact, 'person') && property_exists($contact, 'emailAddresses') && property_exists($contact, 'phoneNumbers')) {
+        if (property_exists($contact, 'person')
+            && property_exists($contact, 'emailAddresses')
+            && property_exists($contact, 'phoneNumbers')) {
             if (property_exists($contact->emailAddresses, 'business')) {
                 $email = $contact->emailAddresses->business[0];
             } elseif (property_exists($contact->emailAddresses, 'private')) {
@@ -155,25 +179,29 @@ class SyncLexofficeContacts extends Command
                 $phone = $contact->phoneNumbers->private[0];
             }
 
-            if(isset($email)) {
+            if (isset($email)) {
+                $user = User::firstOrCreate(
+                    [
+                        'email' => $email
+                    ],
+                    [
+                        'first_name' => $contact->person->firstName,
+                        'last_name' => $contact->person->lastName,
+                        'email' => $email,
+                        'password' => Hash::make($email)
+                    ]
+                );
 
-                $user = User::firstOrCreate([
-                    'email' => $email
-                ], [
-                    'first_name' => $contact->person->firstName,
-                    'last_name' => $contact->person->lastName,
-                    'email' => $email,
-                    'password' => Hash::make($email)
-                ]);
-
-                $customer = $user->customer()->firstOrCreate([
-                    'lexoffice_id' => $contact->id,
-                    'salutation' => $contact->person->salutation,
-                    'first_name' => $contact->person->firstName,
-                    'last_name' => $contact->person->lastName,
-                    'email' => $contact->person->email ?? "",
-                    'phone' => $contact->person->phone ?? ""
-                ]);
+                $customer = $user->customer()->firstOrCreate(
+                    [
+                        'lexoffice_id' => $contact->id,
+                        'salutation' => $contact->person->salutation,
+                        'first_name' => $contact->person->firstName,
+                        'last_name' => $contact->person->lastName,
+                        'email' => $contact->person->email ?? "",
+                        'phone' => $contact->person->phone ?? ""
+                    ]
+                );
 
                 $customer->contacts()->firstOrCreate(
                     [
@@ -185,20 +213,26 @@ class SyncLexofficeContacts extends Command
                         'last_name' => $contact->person->lastName,
                         'email' => $email,
                         'phone' => $phone ?? ""
-                    ]);
+                    ]
+                );
             }
         }
 
-        if (isset($customer) && property_exists($contact, 'addresses') && property_exists($contact->addresses, 'billing') && Arr::has($contact->addresses->billing, "0")) {
+        if (isset($customer)
+            && property_exists($contact, 'addresses')
+            && property_exists($contact->addresses, 'billing')
+            && Arr::has($contact->addresses->billing, "0")) {
             $address = $contact->addresses->billing[0];
-            $customer->address()->create([
-                'type'         => 'billing',
-                'street'       => $address->street,
-                'supplement'   => $address->supplement ?? '',
-                'zip'          => $address->zip,
-                'city'         => $address->city,
-                'country_code' => $address->countryCode
-            ]);
+            $customer->address()->create(
+                [
+                    'type' => 'billing',
+                    'street' => $address->street,
+                    'supplement' => $address->supplement ?? '',
+                    'zip' => $address->zip,
+                    'city' => $address->city,
+                    'country_code' => $address->countryCode
+                ]
+            );
         }
     }
 }

@@ -4,16 +4,12 @@ namespace App\Nova;
 
 use App\Nova\Filters\User\CustomerFilter;
 use Illuminate\Http\Request;
-use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\BelongsToMany;
 use Laravel\Nova\Fields\Gravatar;
-use Laravel\Nova\Fields\HasManyThrough;
 use Laravel\Nova\Fields\HasOne;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Password;
-use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
-use Laravel\Nova\Panel;
 
 /**
  * @property string $first_name
@@ -40,16 +36,20 @@ class User extends Resource
      * @var array
      */
     public static $search = [
-        'id', 'first_name', 'last_name', 'email'
+        'id',
+        'first_name',
+        'last_name',
+        'email'
     ];
 
     /**
      * Get the fields displayed by the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public function fields(Request $request) {
+    public function fields(Request $request)
+    {
         return [
             ID::make()->sortable(),
 
@@ -82,20 +82,22 @@ class User extends Resource
     /**
      * Get the cards available for the request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public function cards(Request $request) {
+    public function cards(Request $request)
+    {
         return [];
     }
 
     /**
      * Get the filters available for the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public function filters(Request $request) {
+    public function filters(Request $request)
+    {
         return [
             new CustomerFilter()
         ];
@@ -104,27 +106,30 @@ class User extends Resource
     /**
      * Get the lenses available for the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public function lenses(Request $request) {
+    public function lenses(Request $request)
+    {
         return [];
     }
 
     /**
      * Get the actions available for the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public function actions(Request $request) {
+    public function actions(Request $request)
+    {
         return [];
     }
 
     /**
      * @return string
      */
-    public function title() {
+    public function title()
+    {
         return $this->first_name . ' ' . $this->last_name;
     }
 
@@ -132,8 +137,9 @@ class User extends Resource
      * @param string|null $relation
      * @return bool|mixed
      */
-    private function hasCustomerAndRelation(?string $relation = null) {
-        if($relation === null) {
+    private function hasCustomerAndRelation(?string $relation = null)
+    {
+        if ($relation === null) {
             return $this->resource->customer;
         }
         return $this->resource->customer->exists && $this->resource->customer->$relation()->count() !== 0;

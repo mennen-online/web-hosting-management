@@ -10,35 +10,45 @@ use Illuminate\Support\Facades\Log;
 
 class NameserverObject extends Connector
 {
-    public function info(Domain $domain) {
+    public function info(Domain $domain)
+    {
         $this->prepareRequest();
 
-        $response = $this->domrobot->call('nameserver', 'info', [
-            'domain' => $domain->name
-        ]);
+        $response = $this->domrobot->call(
+            'nameserver',
+            'info',
+            [
+                'domain' => $domain->name
+            ]
+        );
 
-        if($response['code'] === 2303) {
+        if ($response['code'] === 2303) {
             return $this->create($domain, $domain->customerProduct->server);
         }
 
         return $response['resData'];
     }
 
-    public function create(Domain $domain, Server $server) {
+    public function create(Domain $domain, Server $server)
+    {
         $this->prepareRequest();
 
         $serverInformation = app()->make(ServersEndpoint::class)->get($server);
-        $response = $this->domrobot->call('nameserver', 'create', [
-            'domain' => $domain->name,
-            'type' => 'MASTER',
-            'ns' => [
-                'ns.inwx.de',
-                'ns2.inwx.de',
-                'ns3.inwx.eu'
-            ],
-            'web' => $serverInformation->server->ip_address
-        ]);
-        Log::info('Nameserver Creation for Domain ' . $domain->name .' - Response:');
+        $response = $this->domrobot->call(
+            'nameserver',
+            'create',
+            [
+                'domain' => $domain->name,
+                'type' => 'MASTER',
+                'ns' => [
+                    'ns.inwx.de',
+                    'ns2.inwx.de',
+                    'ns3.inwx.eu'
+                ],
+                'web' => $serverInformation->server->ip_address
+            ]
+        );
+        Log::info('Nameserver Creation for Domain ' . $domain->name . ' - Response:');
         Log::info(json_encode($response));
 
         return $response;

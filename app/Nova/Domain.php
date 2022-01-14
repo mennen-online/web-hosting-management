@@ -8,13 +8,12 @@ use App\Services\Internetworx\Objects\DomainObject;
 use Armincms\Fields\Chain;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Str;
 use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\Boolean;
 use Laravel\Nova\Fields\Currency;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Text;
-use Laravel\Nova\Http\Requests\NovaRequest;
-use Illuminate\Support\Str;
 
 class Domain extends Resource
 {
@@ -49,57 +48,75 @@ class Domain extends Resource
     /**
      * Get the fields displayed by the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
     public function fields(Request $request)
     {
         return [
             ID::make(__('ID'), 'id')->sortable(),
-            BelongsTo::make(__('Customer Product'), 'customerProduct')->showOnCreating(false)->showOnUpdating(false)->showOnDetail(true),
+            BelongsTo::make(
+                __('Customer Product'),
+                'customerProduct'
+            )->showOnCreating(false)->showOnUpdating(false)->showOnDetail(true),
             ID::make(__('Registrar ID'))->readonly(true),
             Text::make(__('Name'), 'name')->readonly(true)
                 ->showOnCreating(false),
-            Chain::as('domainname', function() {
-                return [
-                    Text::make(__('Name'), 'name')->readonly($this->resource->exists),
-                ];
-            }),
-            Chain::with('domainname', function($request) {
-                $domain = $request->input('name');
-                if(!\App\Models\Product::where('description', 'LIKE', '%Domain%')->first()) {
-                    Artisan::call('internetworx:domains:price:sync');
-                }
-                /**
-                 * @phpstan-ignore-next-line
-                 */
-                $tlds = \App\Models\Product::where('description', 'LIKE', '%Domain%')->get()->pluck('name')->map(function($tld) {
-                    return '.'.$tld;
-                });
-                if(Str::endsWith($domain, $tlds->toArray())) {
-                    $domainObject = app()->make(DomainObject::class);
-                    $status = $domainObject->check($domain)[0];
-                    $price = $domainObject->getPrice($domain)[$status['domain']];
-
+            Chain::as(
+                'domainname',
+                function () {
                     return [
-                        Currency::make(__('Price'), function() use($price) {
-                            return number_format($price['price'], 2);
-                        })->currency($price['currency'])->readonly(true),
-                        Text::make(__('Price Information'), function() {
-                            return "Preis / Jahr zzgl. 19 % MwSt.";
-                        })->readonly(true),
-                        Boolean::make(__('Price Confirmed'))
-                        ->rules(['required', 'accepted'])->withMeta(['value' => 0])
+                        Text::make(__('Name'), 'name')->readonly($this->resource->exists),
                     ];
                 }
-            }, 'domain-price-confirmation'),
+            ),
+            Chain::with(
+                'domainname',
+                function ($request) {
+                    $domain = $request->input('name');
+                    if (!\App\Models\Product::where('description', 'LIKE', '%Domain%')->first()) {
+                        Artisan::call('internetworx:domains:price:sync');
+                    }
+                    /**
+                     * @phpstan-ignore-next-line
+                     */
+                    $tlds = \App\Models\Product::where('description', 'LIKE', '%Domain%')->get()->pluck('name')->map(
+                        function ($tld) {
+                            return '.' . $tld;
+                        }
+                    );
+                    if (Str::endsWith($domain, $tlds->toArray())) {
+                        $domainObject = app()->make(DomainObject::class);
+                        $status = $domainObject->check($domain)[0];
+                        $price = $domainObject->getPrice($domain)[$status['domain']];
+
+                        return [
+                            Currency::make(
+                                __('Price'),
+                                function () use ($price) {
+                                    return number_format($price['price'], 2);
+                                }
+                            )->currency($price['currency'])->readonly(true),
+                            Text::make(
+                                __('Price Information'),
+                                function () {
+                                    return "Preis / Jahr zzgl. 19 % MwSt.";
+                                }
+                            )->readonly(true),
+                            Boolean::make(__('Price Confirmed'))
+                                ->rules(['required', 'accepted'])->withMeta(['value' => 0])
+                        ];
+                    }
+                },
+                'domain-price-confirmation'
+            ),
         ];
     }
 
     /**
      * Get the cards available for the request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
     public function cards(Request $request)
@@ -110,7 +127,7 @@ class Domain extends Resource
     /**
      * Get the filters available for the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
     public function filters(Request $request)
@@ -121,7 +138,7 @@ class Domain extends Resource
     /**
      * Get the lenses available for the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
     public function lenses(Request $request)
@@ -132,7 +149,7 @@ class Domain extends Resource
     /**
      * Get the actions available for the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
     public function actions(Request $request)

@@ -3,26 +3,24 @@
 namespace App\Observers;
 
 use App\Models\CustomerProduct;
-use App\Models\Domain;
 use App\Services\Internetworx\Objects\DomainObject;
 use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use Illuminate\Support\Str;
-use Log;
 
 class CustomerProductObserver
 {
     /**
      * Handle the CustomerProduct "created" event.
      *
-     * @param  \App\Models\CustomerProduct  $customerProduct
+     * @param \App\Models\CustomerProduct $customerProduct
      * @return void
      */
     public function created(CustomerProduct $customerProduct)
     {
-        if($customerProduct->domain->exists && !app()->runningUnitTests()) {
+        if ($customerProduct->domain->exists && !app()->runningUnitTests()) {
             $product = $customerProduct->product;
 
-            if (class_exists($classname = 'App\\Services\\Product\\Models\\'.Str::kebab($product->name))) {
+            if (class_exists($classname = 'App\\Services\\Product\\Models\\' . Str::kebab($product->name))) {
                 new $classname();
             }
 
@@ -34,7 +32,7 @@ class CustomerProductObserver
 
             $domain->refresh();
 
-            if($domain->registrar_id === null) {
+            if ($domain->registrar_id === null) {
                 $domainInfo = app()->make(DomainObject::class)->get($domain);
                 $domain->update(['registrar_id' => $domainInfo['roId']]);
             }
@@ -48,7 +46,7 @@ class CustomerProductObserver
     /**
      * Handle the CustomerProduct "updated" event.
      *
-     * @param  \App\Models\CustomerProduct  $customerProduct
+     * @param \App\Models\CustomerProduct $customerProduct
      * @return void
      */
     public function updated(CustomerProduct $customerProduct)
@@ -59,7 +57,7 @@ class CustomerProductObserver
     /**
      * Handle the CustomerProduct "deleted" event.
      *
-     * @param  \App\Models\CustomerProduct  $customerProduct
+     * @param \App\Models\CustomerProduct $customerProduct
      * @return void
      */
     public function deleted(CustomerProduct $customerProduct)
@@ -70,7 +68,7 @@ class CustomerProductObserver
     /**
      * Handle the CustomerProduct "restored" event.
      *
-     * @param  \App\Models\CustomerProduct  $customerProduct
+     * @param \App\Models\CustomerProduct $customerProduct
      * @return void
      */
     public function restored(CustomerProduct $customerProduct)
@@ -81,7 +79,7 @@ class CustomerProductObserver
     /**
      * Handle the CustomerProduct "force deleted" event.
      *
-     * @param  \App\Models\CustomerProduct  $customerProduct
+     * @param \App\Models\CustomerProduct $customerProduct
      * @return void
      */
     public function forceDeleted(CustomerProduct $customerProduct)

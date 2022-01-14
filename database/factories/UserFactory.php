@@ -33,8 +33,9 @@ class UserFactory extends Factory
         ];
     }
 
-    public function customer() {
-        return $this->afterCreating(function(User $user) {
+    public function customer()
+    {
+        return $this->afterCreating(function (User $user) {
             Customer::factory()->create(['user_id' => $user->id]);
         });
     }

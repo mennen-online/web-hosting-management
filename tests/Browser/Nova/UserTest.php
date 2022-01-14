@@ -15,12 +15,14 @@ class UserTest extends DuskTestCase
 {
     use WithFaker;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
     }
 
-    public function testCreateUser() {
-        $this->browse(function(Browser $browser) {
+    public function testCreateUser()
+    {
+        $this->browse(function (Browser $browser) {
             $user = [
                 'first_name' => $this->faker->firstName,
                 'last_name' => $this->faker->lastName,

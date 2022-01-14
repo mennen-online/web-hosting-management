@@ -26,8 +26,8 @@ class CustomerInvoicePosition extends Model
         'unitPrice' => 'json'
     ];
 
-    public function invoice() {
+    public function invoice()
+    {
         return $this->belongsTo(CustomerInvoice::class);
     }
-
 }

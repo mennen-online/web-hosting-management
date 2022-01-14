@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Laravel\Nova\Http\Requests\NovaRequest;
 
 /**
  * @property Domain $domain
@@ -37,63 +36,73 @@ class CustomerProduct extends Model
     /**
      * @return void
      */
-    protected static function boot() {
+    protected static function boot()
+    {
         parent::boot();
 
-        self::creating(function(CustomerProduct $customerProduct) {
-            if($customerProduct->product_id === null) {
-                $domain = Domain::find($customerProduct->domain_id);
+        self::creating(
+            function (CustomerProduct $customerProduct) {
+                if ($customerProduct->product_id === null) {
+                    $domain = Domain::find($customerProduct->domain_id);
 
-                $domainName = explode('.', $domain->name);
-                if (count($domainName) > 2) {
-                    $tld = $domainName[1].'.'.$domainName[2];
-                } else {
-                    $tld = $domainName[1];
+                    $domainName = explode('.', $domain->name);
+                    if (count($domainName) > 2) {
+                        $tld = $domainName[1] . '.' . $domainName[2];
+                    } else {
+                        $tld = $domainName[1];
+                    }
+
+                    $product = Product::where('name', $tld)->first();
+
+                    CustomerProduct::create(
+                        [
+                            'customer_id' => $customerProduct->customer_id,
+                            'product_id' => $product->id,
+                            'domain_id' => $customerProduct->domain_id
+                        ]
+                    );
                 }
-
-                $product = Product::where('name', $tld)->first();
-
-                CustomerProduct::create([
-                    'customer_id' => $customerProduct->customer_id,
-                    'product_id'  => $product->id,
-                    'domain_id'   => $customerProduct->domain_id
-                ]);
             }
-        });
+        );
     }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function customer() {
+    public function customer()
+    {
         return $this->belongsTo(Customer::class);
     }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function invoices() {
+    public function invoices()
+    {
         return $this->belongsToMany(CustomerInvoice::class, 'customer_id', 'customer_id');
     }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function product() {
+    public function product()
+    {
         return $this->belongsTo(Product::class);
     }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function server() {
+    public function server()
+    {
         return $this->belongsTo(Server::class);
     }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function domain() {
+    public function domain()
+    {
         return $this->belongsTo(Domain::class);
     }
 }

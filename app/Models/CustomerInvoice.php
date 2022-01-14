@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Cassandra\Custom;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -48,21 +47,24 @@ class CustomerInvoice extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function customer() {
+    public function customer()
+    {
         return $this->belongsTo(Customer::class);
     }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function products() {
+    public function products()
+    {
         return $this->hasMany(CustomerProduct::class, 'customer_id', 'customer_id');
     }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function position() {
+    public function position()
+    {
         return $this->hasMany(CustomerInvoicePosition::class);
     }
 }

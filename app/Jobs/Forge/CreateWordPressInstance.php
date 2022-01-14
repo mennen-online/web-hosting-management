@@ -4,9 +4,7 @@ namespace App\Jobs\Forge;
 
 use App\Models\CustomerProduct;
 use App\Services\Forge\Endpoints\WordPressEndpoint;
-use App\Services\Product\Models\WordPress;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -24,8 +22,7 @@ class CreateWordPressInstance implements ShouldQueue
     public function __construct(
         protected CustomerProduct $customerProduct,
         protected int $siteId
-    )
-    {
+    ) {
         //
     }
 

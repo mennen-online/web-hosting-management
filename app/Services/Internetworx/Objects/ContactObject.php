@@ -10,7 +10,8 @@ use Illuminate\Support\Arr;
 
 class ContactObject extends Connector
 {
-    public function index(int $page = 1, int $pageLimit = 250, ?int $id = null) {
+    public function index(int $page = 1, int $pageLimit = 250, ?int $id = null)
+    {
         $this->prepareRequest();
 
         $params = [
@@ -18,7 +19,7 @@ class ContactObject extends Connector
             'pagelimit' => $pageLimit
         ];
 
-        if($id) {
+        if ($id) {
             $params['id'] = $id;
         }
 
@@ -27,19 +28,23 @@ class ContactObject extends Connector
         return $this->processResponse($response, 'contact');
     }
 
-    public function searchBy(string $field, string $value) {
+    public function searchBy(string $field, string $value)
+    {
         $this->prepareRequest();
 
         $contacts = $this->processResponse($this->index(1, 5000), 'contact');
 
-        return collect($contacts)->filter(function($contact) use($field, $value) {
-           if(Arr::has($contact, $field) && Arr::get($contact, $field) === $value) {
-               return $contact;
-           }
-        });
+        return collect($contacts)->filter(
+            function ($contact) use ($field, $value) {
+                if (Arr::has($contact, $field) && Arr::get($contact, $field) === $value) {
+                    return $contact;
+                }
+            }
+        );
     }
 
-    public function create(CustomerContact $contact) {
+    public function create(CustomerContact $contact)
+    {
         $this->prepareRequest();
 
         $params = [];
@@ -61,7 +66,6 @@ class ContactObject extends Connector
         }
 
         if (isset($address)) {
-
             $params['street'] = $address->street;
             $params['city'] = $address->city;
             $params['pc'] = $address->zip;
@@ -86,7 +90,6 @@ class ContactObject extends Connector
             }
 
             $params['email'] = $contact->email;
-
         }
 
         $response = $this->domrobot->call('contact', 'create', $params);
@@ -94,20 +97,28 @@ class ContactObject extends Connector
         return $this->processResponse($response, 'id');
     }
 
-    public function delete(Customer|int $customer) {
+    public function delete(Customer|int $customer)
+    {
         $this->prepareRequest();
 
-        if($customer instanceof Customer) {
-            $response = $this->domrobot->call('contact', 'delete', [
-                'id' => $customer->user->id
-            ]);
-
+        if ($customer instanceof Customer) {
+            $response = $this->domrobot->call(
+                'contact',
+                'delete',
+                [
+                    'id' => $customer->user->id
+                ]
+            );
         }
 
-        if(is_int($customer)) {
-            $response = $this->domrobot->call('contact', 'delete', [
-                'id' => $customer
-            ]);
+        if (is_int($customer)) {
+            $response = $this->domrobot->call(
+                'contact',
+                'delete',
+                [
+                    'id' => $customer
+                ]
+            );
         }
 
         return $this->processResponse($response, 'contact');

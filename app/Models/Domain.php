@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Session;
 
 /**
  * @property CustomerProduct $customerProduct
@@ -35,21 +33,23 @@ class Domain extends Model
     /**
      * @return void
      */
-    protected static function boot() {
+    protected static function boot()
+    {
         parent::boot();
 
-        self::creating(function(Domain $domain) {
-            unset($domain->user_id, $domain->ComputedField, $domain->price_confirmed);
-        });
-
-
+        self::creating(
+            function (Domain $domain) {
+                unset($domain->user_id, $domain->ComputedField, $domain->price_confirmed);
+            }
+        );
     }
 
     /**
      * @return BelongsTo
      */
-    public function user() {
-        if($this->customer) {
+    public function user()
+    {
+        if ($this->customer) {
             return $this->customer()->first()->user();
         }
         return $this->belongsTo(User::class);
@@ -58,15 +58,23 @@ class Domain extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasOneThrough
      */
-    public function customer() {
-        return $this->hasOneThrough( Customer::class, CustomerProduct::class,
-            'domain_id', 'id', 'id', 'customer_id');
+    public function customer()
+    {
+        return $this->hasOneThrough(
+            Customer::class,
+            CustomerProduct::class,
+            'domain_id',
+            'id',
+            'id',
+            'customer_id'
+        );
     }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
-    public function customerProduct() {
+    public function customerProduct()
+    {
         return $this->hasOne(CustomerProduct::class);
     }
 }

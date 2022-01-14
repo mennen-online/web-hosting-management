@@ -21,67 +21,75 @@ class ContactsEndpoint extends Connector
         parent::__construct();
     }
 
-    public function filterEmail(string $email): static {
+    public function filterEmail(string $email): static
+    {
         $this->filterEmail = $email;
 
         return $this;
     }
 
-    public function filterName(string $name): static {
+    public function filterName(string $name): static
+    {
         $this->filterName = $name;
 
         return $this;
     }
 
-    public function filterNumber(int $number): static {
+    public function filterNumber(int $number): static
+    {
         $this->filterNumber = $number;
 
         return $this;
     }
 
-    public function onlyCustomer(): static {
+    public function onlyCustomer(): static
+    {
         $this->filterCustomer = true;
 
         return $this;
     }
 
-    public function onlyVendor(): static {
+    public function onlyVendor(): static
+    {
         $this->filterVendor = true;
 
         return $this;
     }
 
-    public function index() {
+    public function index()
+    {
         $query = [];
 
-        if($this->filterEmail) {
+        if ($this->filterEmail) {
             $query['email'] = $this->filterEmail;
         }
 
-        if($this->filterName) {
+        if ($this->filterName) {
             $query['name'] = $this->filterName;
         }
 
-        if($this->filterNumber) {
+        if ($this->filterNumber) {
             $query['number'] = $this->filterNumber;
         }
 
-        if($this->filterCustomer) {
+        if ($this->filterCustomer) {
             $query['customer'] = "true";
         }
 
-        if($this->filterVendor) {
+        if ($this->filterVendor) {
             $query['vendor'] = "true";
         }
 
         return collect($this->getRequest('/contacts', $query)->content);
     }
 
-    public function get(string $id) {
+    public function get(string $id)
+    {
         return $this->getRequest('/contacts/' . $id);
     }
 
-    public function createCompanyContact(Customer $customer) {
+    public function createCompanyContact(Customer $customer)
+    {
         $role = new stdClass();
         $role->customer = new stdClass();
         $data = [
@@ -110,7 +118,8 @@ class ContactsEndpoint extends Connector
         return $this->postRequest('/contacts', $data);
     }
 
-    public function createPersonContact(Customer $customer) {
+    public function createPersonContact(Customer $customer)
+    {
         $role = new stdClass();
         $role->customer = new stdClass();
         $data = [
@@ -130,10 +139,11 @@ class ContactsEndpoint extends Connector
         return $this->postRequest('/contacts', $data);
     }
 
-    public function createOrUpdateCompanyContactPerson(Customer $customer, CustomerContact $customerContact) {
+    public function createOrUpdateCompanyContactPerson(Customer $customer, CustomerContact $customerContact)
+    {
         $originalData = $this->get($customer->lexoffice_id);
 
-        if(!property_exists($originalData->company, 'contactPersons')) {
+        if (!property_exists($originalData->company, 'contactPersons')) {
             $originalData->company->contactPersons = [];
         }
 
@@ -150,14 +160,21 @@ class ContactsEndpoint extends Connector
         return $this->putRequest('/contacts', $customer->lexoffice_id, $originalData);
     }
 
-    public function createOrUpdateCompanyBillingAddress(Customer $customer, string $supplement, string $streetAndNumber, string $postcode, string $city, string $countryCode) {
+    public function createOrUpdateCompanyBillingAddress(
+        Customer $customer,
+        string $supplement,
+        string $streetAndNumber,
+        string $postcode,
+        string $city,
+        string $countryCode
+    ) {
         $originalData = $this->get($customer->lexoffice_id);
 
-        if(!property_exists($originalData, 'addresses')) {
+        if (!property_exists($originalData, 'addresses')) {
             $originalData->addresses = new stdClass();
         }
 
-        if(!property_exists($originalData->addresses, 'billing')) {
+        if (!property_exists($originalData->addresses, 'billing')) {
             $originalData->addresses->billing = [];
         }
 

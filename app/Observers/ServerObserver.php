@@ -12,7 +12,7 @@ class ServerObserver
     /**
      * Handle the Server "created" event.
      *
-     * @param  \App\Models\Server  $server
+     * @param \App\Models\Server $server
      * @return void
      */
     public function created(Server $server)
@@ -23,7 +23,7 @@ class ServerObserver
     /**
      * Handle the Server "updated" event.
      *
-     * @param  \App\Models\Server  $server
+     * @param \App\Models\Server $server
      * @return void
      */
     public function updated(Server $server)
@@ -34,7 +34,7 @@ class ServerObserver
     /**
      * Handle the Server "deleted" event.
      *
-     * @param  \App\Models\Server  $server
+     * @param \App\Models\Server $server
      * @return void
      */
     public function deleted(Server $server)
@@ -47,7 +47,7 @@ class ServerObserver
     /**
      * Handle the Server "restored" event.
      *
-     * @param  \App\Models\Server  $server
+     * @param \App\Models\Server $server
      * @return void
      */
     public function restored(Server $server)
@@ -58,7 +58,7 @@ class ServerObserver
     /**
      * Handle the Server "force deleted" event.
      *
-     * @param  \App\Models\Server  $server
+     * @param \App\Models\Server $server
      * @return void
      */
     public function forceDeleted(Server $server)

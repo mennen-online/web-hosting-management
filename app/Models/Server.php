@@ -19,17 +19,21 @@ class Server extends Model
         'updated_at'
     ];
 
-    protected static function boot() {
+    protected static function boot()
+    {
         parent::boot();
 
-        self::creating(function(Server $server){
-            if($server->forge_id === null) {
-                $server->forge_id = app()->make(ServersEndpoint::class)->create()->server->id;
+        self::creating(
+            function (Server $server) {
+                if ($server->forge_id === null) {
+                    $server->forge_id = app()->make(ServersEndpoint::class)->create()->server->id;
+                }
             }
-        });
+        );
     }
 
-    public function customerProduct() {
+    public function customerProduct()
+    {
         return $this->hasMany(CustomerProduct::class);
     }
 }

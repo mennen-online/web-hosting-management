@@ -20,7 +20,6 @@ use Laravel\Sanctum\HasApiTokens;
  * @property Collection $customerInvoices
  * @property Collection $customerProducts
  * @property string $name
- *
  */
 
 class User extends Authenticatable

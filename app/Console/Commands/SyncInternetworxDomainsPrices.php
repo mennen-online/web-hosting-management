@@ -28,7 +28,8 @@ class SyncInternetworxDomainsPrices extends Command
      *
      * @return void
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
     }
 
@@ -37,27 +38,35 @@ class SyncInternetworxDomainsPrices extends Command
      *
      * @return int
      */
-    public function handle() {
+    public function handle()
+    {
         $domainObject = app()->make(DomainObject::class);
 
         $response = $domainObject->indexPrice();
 
-        $prices = $response->filter(function($price) {
-            if(!Arr::has($price, 'tld-ace') && !empty($price['tld'])) {
-                return $price;
+        $prices = $response->filter(
+            function ($price) {
+                if (!Arr::has($price, 'tld-ace') && !empty($price['tld'])) {
+                    return $price;
+                }
             }
-        });
+        );
 
         $this->info("Process Domainprices");
-        $this->withProgressBar($prices, function($price) {
-            Product::updateOrCreate(
-                [
-                    'name' => $price['tld']
-                ], [
-                'description' => "Domain ".$price['tld'],
-                'price'       => number_format($price['createPrice'], 2, '.', '')
-            ]);
-        });
+        $this->withProgressBar(
+            $prices,
+            function ($price) {
+                Product::updateOrCreate(
+                    [
+                        'name' => $price['tld']
+                    ],
+                    [
+                        'description' => "Domain " . $price['tld'],
+                        'price' => number_format($price['createPrice'], 2, '.', '')
+                    ]
+                );
+            }
+        );
         return 0;
     }
 }

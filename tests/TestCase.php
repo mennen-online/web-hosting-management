@@ -18,7 +18,8 @@ abstract class TestCase extends BaseTestCase
 
     protected ContactObject $contactObject;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         parent::setUp();
 
         $this->seed([
