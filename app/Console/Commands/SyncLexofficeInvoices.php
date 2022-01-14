@@ -143,7 +143,7 @@ class SyncLexofficeInvoices extends Command
             }
         } catch (LexofficeException $lexofficeException) {
             Log::error($lexofficeException->getMessage());
-        } catch(Exception $exception) {
+        } catch (Exception $exception) {
             Log::error($exception->getMessage());
         }
     }
