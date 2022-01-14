@@ -89,7 +89,9 @@ class SyncLexofficeInvoices extends Command
                     $result = $this->voucherlistEndpoint->setPage($page)->index();
                     if ($result) {
                         foreach ($result->content as $invoice) {
-                            $this->processInvoice($customer, $invoice);
+                            if (Str::startsWith($invoice->voucherNumber, 'RE')) {
+                                $this->processInvoice($customer, $invoice);
+                            }
                         }
                     }
                     $page += 1;
