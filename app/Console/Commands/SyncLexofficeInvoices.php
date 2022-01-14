@@ -2,11 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Exceptions\LexofficeException;
 use App\Models\Customer;
 use App\Models\CustomerInvoice;
 use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use App\Services\Lexoffice\Endpoints\VoucherlistEndpoint;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
@@ -48,12 +50,7 @@ class SyncLexofficeInvoices extends Command
     public function handle()
     {
         if ($this->voucherlistEndpoint->isLexofficeAvailable()) {
-            $customers = Customer::all()->filter(function ($customer) {
-                if ($customer->invoices()->first() === null) {
-                    return $customer;
-                }
-            });
-            $this->withProgressBar($customers, function ($customer) {
+            $this->withProgressBar(Customer::all(), function ($customer) {
                 $this->processImportCustomer($customer);
             });
         }
@@ -97,51 +94,52 @@ class SyncLexofficeInvoices extends Command
             }
         }
 
-        if ($customerInvoices->count() !== $customer->invoices()->count()) {
-            $customerInvoices->each(function ($invoice) use ($customer) {
-                $this->processInvoice($customer, $invoice);
-            });
-        } else {
-            $this->info($customer->id . ' has no new Invoices');
-        }
+        $customerInvoices->each(function ($invoice) use ($customer) {
+            $this->processInvoice($customer, $invoice);
+        });
     }
 
     private function processInvoice($customer, $invoice)
     {
         $this->info('Processing Invoice ' . $invoice->voucherNumber);
+        try {
+            $invoiceData = app()->make(InvoicesEndpoint::class)->get(new CustomerInvoice(['lexoffice_id' => $invoice->id]));
 
-        $invoiceData = app()->make(InvoicesEndpoint::class)->get(new CustomerInvoice(['lexoffice_id' => $invoice->id]));
+            if($customer->invoices()->where('lexoffice_id', $invoice->id)->exists() === null) {
+                $invoice = $customer->invoices()->create([
+                    'lexoffice_id'          => $invoice->id,
+                    'voucher_number'        => $invoice->voucherNumber,
+                    'voucher_date'          => $invoice->voucherDate,
+                    'total_net_amount'      => $invoiceData->totalPrice->totalNetAmount,
+                    'total_gross_amount'    => $invoiceData->totalPrice->totalGrossAmount,
+                    'total_tax_amount'      => $invoiceData->totalPrice->totalTaxAmount,
+                    'payment_term_duration' => $invoiceData->paymentConditions->paymentTermDuration
+                ]);
 
-        $invoice = $customer->invoices()->firstOrCreate([
-            'lexoffice_id'          => $invoice->id,
-            'voucher_number'        => $invoice->voucherNumber,
-            'voucher_date'          => $invoice->voucherDate,
-            'total_net_amount'      => $invoiceData->totalPrice->totalNetAmount,
-            'total_gross_amount'    => $invoiceData->totalPrice->totalGrossAmount,
-            'total_tax_amount'      => $invoiceData->totalPrice->totalTaxAmount,
-            'payment_term_duration' => $invoiceData->paymentConditions->paymentTermDuration
-        ]);
-
-        collect($invoiceData->lineItems)->each(function ($position) use ($invoice) {
-            if (Str::is(['custom', 'text'], $position->type)) {
-                $invoice->position()->create(match ($position->type) {
-                    'custom' => [
-                        'type'                => $position->type,
-                        'name'                => $position->name,
-                        'unit_name'           => $position->unitName ?? "",
-                        'currency'            => $position->unitPrice->currency,
-                        'net_amount'          => $position->unitPrice->netAmount,
-                        'tax_rate_percentage' => $position->unitPrice->taxRatePercentage,
-                        'discount_percentage' => $position->discountPercentage
-                    ],
-                    'text'   => [
-                        'type'        => $position->type,
-                        'name'        => $position->name,
-                        'description' => $position->description
-                    ],
-                    default => []
+                collect($invoiceData->lineItems)->each(function ($position) use ($invoice) {
+                    if (Str::is(['custom', 'text'], $position->type)) {
+                        $invoice->position()->create(match ($position->type) {
+                            'custom' => [
+                                'type'                => $position->type,
+                                'name'                => $position->name,
+                                'unit_name'           => $position->unitName ?? "",
+                                'currency'            => $position->unitPrice->currency,
+                                'net_amount'          => $position->unitPrice->netAmount,
+                                'tax_rate_percentage' => $position->unitPrice->taxRatePercentage,
+                                'discount_percentage' => $position->discountPercentage
+                            ],
+                            'text'   => [
+                                'type'        => $position->type,
+                                'name'        => $position->name,
+                                'description' => $position->description
+                            ],
+                            default  => []
+                        });
+                    }
                 });
             }
-        });
+        }catch(LexofficeException $lexofficeException) {
+            Log::error($lexofficeException->getMessage());
+        }
     }
 }
