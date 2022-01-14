@@ -121,11 +121,11 @@ class SyncLexofficeInvoices extends Command
 
                 collect($invoiceData->lineItems)->each(function ($position) use ($invoice) {
                     if (Str::is(['custom', 'text'], $position->type)) {
-                        $invoice->position()->create(match ($position->type) {
+                        $invoiceData = match ($position->type) {
                             'custom' => [
                                 'type'                => $position->type,
                                 'name'                => $position->name,
-                                'unit_name'           => $position->unitName ?? "",
+                                'unit_name'           => $position->unitName ?? null,
                                 'currency'            => $position->unitPrice->currency,
                                 'net_amount'          => $position->unitPrice->netAmount,
                                 'tax_rate_percentage' => $position->unitPrice->taxRatePercentage,
@@ -137,7 +137,11 @@ class SyncLexofficeInvoices extends Command
                                 'description' => $position->description
                             ],
                             default  => []
-                        });
+                        };
+
+                        if (!empty($invoiceData)) {
+                            $invoice->position()->create($invoiceData);
+                        }
                     }
                 });
             }
