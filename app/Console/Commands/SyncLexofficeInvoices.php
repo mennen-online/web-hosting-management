@@ -75,33 +75,28 @@ class SyncLexofficeInvoices extends Command
                      'transferred',
                      'sepadebit'
                  ] as $voucherStatus) {
-            foreach ([
-                         'invoice',
-                         'creditnote'
-                     ] as $voucherType) {
-                $this->voucherlistEndpoint->setVoucherType($voucherType);
-                $this->voucherlistEndpoint->setContactId($customer->lexoffice_id);
-                $this->voucherlistEndpoint->setVoucherStatus($voucherStatus);
+            $this->voucherlistEndpoint->setVoucherType('invoice');
+            $this->voucherlistEndpoint->setContactId($customer->lexoffice_id);
+            $this->voucherlistEndpoint->setVoucherStatus($voucherStatus);
 
-                $this->voucherlistEndpoint->setPageSize(250);
+            $this->voucherlistEndpoint->setPageSize(250);
 
-                $page = 0;
+            $page = 0;
 
-                do {
-                    $result = $this->voucherlistEndpoint->setPage($page)->index();
-                    if ($result) {
-                        $invoiceNumbers->push(collect($result->content)->filter(function ($invoice) use ($customer) {
-                            if (Str::startsWith(
-                                $invoice->voucherNumber,
-                                'RE'
-                            ) && !$customer->invoices()->where('lexoffice_id', $invoice->id)->exists()) {
-                                return $invoice->id;
-                            }
-                        }));
-                    }
-                    $page += 1;
-                } while ($result && $result->last === false);
-            }
+            do {
+                $result = $this->voucherlistEndpoint->setPage($page)->index();
+                if ($result) {
+                    $invoiceNumbers->push(collect($result->content)->filter(function ($invoice) use ($customer) {
+                        if (Str::startsWith(
+                            $invoice->voucherNumber,
+                            'RE'
+                        ) && !$customer->invoices()->where('lexoffice_id', $invoice->id)->exists()) {
+                            return $invoice->id;
+                        }
+                    }));
+                }
+                $page += 1;
+            } while ($result && $result->last === false);
         }
 
         $invoiceNumbers->each(function ($invoiceNumber) use ($customer) {
