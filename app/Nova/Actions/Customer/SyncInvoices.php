@@ -16,10 +16,12 @@ class SyncInvoices extends Action
 {
     use InteractsWithQueue, Queueable;
 
-    public function __construct(
-        protected VoucherlistEndpoint $voucherlistEndpoint,
-        protected InvoicesEndpoint $invoicesEndpoint
-    ) {
+    protected VoucherlistEndpoint $voucherlistEndpoint;
+
+    protected InvoicesEndpoint $invoicesEndpoint;
+
+    public function __construct()
+    {
         $this->voucherlistEndpoint = app()->make(VoucherlistEndpoint::class);
 
         $this->invoicesEndpoint = app()->make(InvoicesEndpoint::class);

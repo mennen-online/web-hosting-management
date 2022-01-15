@@ -2,6 +2,7 @@
 
 namespace App\Nova;
 
+use App\Nova\Actions\Customer\SyncInvoices;
 use Armincms\Fields\Chain;
 use Illuminate\Http\Request;
 use Laravel\Nova\Fields\BelongsTo;
@@ -147,6 +148,8 @@ class Customer extends Resource
      */
     public function actions(Request $request)
     {
-        return [];
+        return [
+            new SyncInvoices()
+        ];
     }
 }
