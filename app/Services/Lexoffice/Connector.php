@@ -4,6 +4,7 @@ namespace App\Services\Lexoffice;
 
 use App\Exceptions\LexofficeException;
 use App\Services\Lexoffice\Endpoints\FilesEndpoint;
+use Illuminate\Http\Client\Pool;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
@@ -54,6 +55,14 @@ class Connector
         $this->pageSize = $pageSize;
 
         return $this;
+    }
+
+    protected function getAllRequest(string $endpoint, array $ids) {
+        return Http::pool(fn (Pool $pool) => collect($ids)->map(function($id) use($endpoint, $pool) {
+            return $pool->withToken($this->lexofficeAccessToken)->withHeaders([
+                'accept' => 'application/json'
+            ])->get($endpoint.$id);
+        })->toArray());
     }
 
     protected function getRequest(string $endpoint, array $query = [])
