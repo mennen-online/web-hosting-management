@@ -8,6 +8,8 @@ use App\Models\CustomerProduct;
 use App\Services\Internetworx\Objects\DomainObject;
 use App\Services\Lexoffice\Connector;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -16,6 +18,11 @@ class InvoicesEndpoint extends Connector
     public function get(CustomerInvoice $customerInvoice)
     {
         return $this->getRequest('/invoices/' . $customerInvoice->lexoffice_id);
+    }
+
+    public function getAll(Collection $collection)
+    {
+        return $this->getAllRequest('/invoices/', $collection->toArray());
     }
 
     public function renderInvoice(CustomerInvoice $customerInvoice)

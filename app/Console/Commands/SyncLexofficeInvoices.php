@@ -64,6 +64,8 @@ class SyncLexofficeInvoices extends Command
 
     private function processImportCustomer($customer)
     {
+        $invoiceNumbers = collect();
+
         foreach ([
                      'open',
                      'overdue',
@@ -88,28 +90,35 @@ class SyncLexofficeInvoices extends Command
                 do {
                     $result = $this->voucherlistEndpoint->setPage($page)->index();
                     if ($result) {
-                        foreach ($result->content as $invoice) {
-                            if (Str::startsWith($invoice->voucherNumber, 'RE')) {
-                                $this->processInvoice($customer, $invoice);
+                        $invoiceNumbers->push(collect($result->content)->filter(function ($invoice) use ($customer) {
+                            if (Str::startsWith(
+                                $invoice->voucherNumber,
+                                'RE'
+                            ) && !$customer->invoices()->where('lexoffice_id', $invoice->id)->exists()) {
+                                return $invoice->id;
                             }
-                        }
+                        }));
                     }
                     $page += 1;
                 } while ($result && $result->last === false);
             }
         }
+
+        $invoiceNumbers->each(function ($invoiceNumber) use ($customer) {
+            $this->processInvoice($customer, $invoiceNumber);
+        });
     }
 
-    private function processInvoice($customer, $invoice)
+    private function processInvoice(Customer $customer, string $invoice)
     {
         try {
             $invoiceData = app()->make(InvoicesEndpoint::class)
-                ->get(new CustomerInvoice(['lexoffice_id' => $invoice->id]));
+                ->get(new CustomerInvoice(['lexoffice_id' => $invoice]));
 
             $invoice = $customer->invoices()->firstOrCreate([
-                'lexoffice_id'          => $invoice->id,
-                'voucher_number'        => $invoice->voucherNumber,
-                'voucher_date'          => $invoice->voucherDate,
+                'lexoffice_id'          => $invoiceData->id,
+                'voucher_number'        => $invoiceData->voucherNumber,
+                'voucher_date'          => $invoiceData->voucherDate,
                 'total_net_amount'      => $invoiceData->totalPrice->totalNetAmount,
                 'total_gross_amount'    => $invoiceData->totalPrice->totalGrossAmount,
                 'total_tax_amount'      => $invoiceData->totalPrice->totalTaxAmount,
