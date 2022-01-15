@@ -57,15 +57,18 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function isAdmin() {
+    public function isAdmin()
+    {
         return $this->hasRole('Administrator');
     }
 
-    public function isCustomer() {
+    public function isCustomer()
+    {
         return $this->hasRole('Customer');
     }
 
-    public function hasRole(string $role) {
+    public function hasRole(string $role)
+    {
         return $this->roles()->where('name', $role)->exists();
     }
 
