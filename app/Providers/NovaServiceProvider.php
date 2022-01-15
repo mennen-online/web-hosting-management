@@ -45,8 +45,6 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
                 $role = Role::byName('Administrator');
 
                 $user->roles()->attach($role);
-
-                $user->notify(new NewUser($user));
             }
         );
     }
