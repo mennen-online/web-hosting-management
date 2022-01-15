@@ -62,7 +62,7 @@ class Connector
         return Http::pool(fn (Pool $pool) => collect($ids)->map(function ($id) use ($endpoint, $pool) {
             return $pool->withToken($this->lexofficeAccessToken)->withHeaders([
                 'accept' => 'application/json'
-            ])->get($endpoint.$id);
+            ])->get(self::LEXOFFICE_API_URL.$endpoint.$id);
         })->toArray());
     }
 
