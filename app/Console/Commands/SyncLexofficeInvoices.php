@@ -91,8 +91,10 @@ class SyncLexofficeInvoices extends Command
                     $result = $this->voucherlistEndpoint->setPage($page)->index();
                     if ($result) {
                         $invoiceNumbers->push(collect($result->content)->filter(function ($invoice) use ($customer) {
-                            if (Str::startsWith($invoice->voucherNumber,
-                                    'RE') && !$customer->invoices()->where('lexoffice_id', $invoice->id)->exists()) {
+                            if (Str::startsWith(
+                                $invoice->voucherNumber,
+                                'RE'
+                            ) && !$customer->invoices()->where('lexoffice_id', $invoice->id)->exists()) {
                                 return $invoice->id;
                             }
                         }));
