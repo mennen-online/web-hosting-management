@@ -20,7 +20,8 @@ class InvoicesEndpoint extends Connector
         return $this->getRequest('/invoices/' . $customerInvoice->lexoffice_id);
     }
 
-    public function getAll(Collection $collection) {
+    public function getAll(Collection $collection)
+    {
         return $this->getAllRequest('/invoices/', $collection->toArray());
     }
 

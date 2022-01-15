@@ -57,8 +57,9 @@ class Connector
         return $this;
     }
 
-    protected function getAllRequest(string $endpoint, array $ids) {
-        return Http::pool(fn (Pool $pool) => collect($ids)->map(function($id) use($endpoint, $pool) {
+    protected function getAllRequest(string $endpoint, array $ids)
+    {
+        return Http::pool(fn (Pool $pool) => collect($ids)->map(function ($id) use ($endpoint, $pool) {
             return $pool->withToken($this->lexofficeAccessToken)->withHeaders([
                 'accept' => 'application/json'
             ])->get($endpoint.$id);
