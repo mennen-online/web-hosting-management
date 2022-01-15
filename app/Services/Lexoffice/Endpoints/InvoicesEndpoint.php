@@ -22,7 +22,9 @@ class InvoicesEndpoint extends Connector
 
     public function getAll(Collection $collection)
     {
-        return $this->getAllRequest('/invoices/', $collection->toArray());
+        return collect($this->getAllRequest('/invoices/', $collection->toArray()))->map(function ($response) {
+            return $response->object();
+        });
     }
 
     public function renderInvoice(CustomerInvoice $customerInvoice)

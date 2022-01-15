@@ -1,74 +1,57 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Nova\Actions\Customer;
 
-use App\Exceptions\LexofficeException;
-use App\Models\Customer;
 use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use App\Services\Lexoffice\Endpoints\VoucherlistEndpoint;
-use Illuminate\Console\Command;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Laravel\Nova\Actions\Action;
+use Laravel\Nova\Fields\ActionFields;
 
-class SyncLexofficeInvoices extends Command
+class SyncInvoices extends Action
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'lexoffice:invoices:sync';
+    use InteractsWithQueue, Queueable;
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Sync Invoices with Lexoffice';
+    protected VoucherlistEndpoint $voucherlistEndpoint;
 
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct(
-        protected InvoicesEndpoint $invoicesEndpoint,
-        protected VoucherlistEndpoint $voucherlistEndpoint,
-        protected Collection $invoices,
-        protected array $processedCustomerIds = []
-    ) {
-        parent::__construct();
+    protected InvoicesEndpoint $invoicesEndpoint;
 
+    public function __construct()
+    {
         $this->voucherlistEndpoint = app()->make(VoucherlistEndpoint::class);
 
         $this->invoicesEndpoint = app()->make(InvoicesEndpoint::class);
-
-        $this->invoices = collect();
     }
 
     /**
-     * Execute the console command.
+     * Perform the action on the given models.
      *
-     * @return int
+     * @param  \Laravel\Nova\Fields\ActionFields  $fields
+     * @param  \Illuminate\Support\Collection  $models
+     * @return mixed
      */
-    public function handle()
+    public function handle(ActionFields $fields, Collection $models)
     {
-        if ($this->voucherlistEndpoint->isLexofficeAvailable()) {
-            $this->withProgressBar(Customer::orderBy('number')->get(), function ($customer) {
-                if (!in_array($customer->id, $this->processedCustomerIds)) {
-                    try {
-                        $this->processImportCustomer($customer);
-                    } catch (LexofficeException $lexofficeException) {
-                        sleep(60);
-                        $this->processImportCustomer($customer);
-                    }
-                }
-            });
-        }
-        return 0;
+        $models->each(fn($customer) => $this->syncInvoices($customer));
+
+        return Action::message("Invoices Synchronised successful");
     }
 
-    private function processImportCustomer($customer)
+    /**
+     * Get the fields available on the action.
+     *
+     * @return array
+     */
+    public function fields()
+    {
+        return [];
+    }
+
+    private function syncInvoices($customer)
     {
         $invoicesPerCustomer = collect();
 
@@ -128,8 +111,6 @@ class SyncLexofficeInvoices extends Command
             });
 
             DB::commit();
-
-            $this->processedCustomerIds[] = $customer->id;
         }
     }
 
