@@ -15,7 +15,9 @@ class UserObserver
      */
     public function created(User $user)
     {
-        $user->notify(new NewUser($user));
+        if($user->isAdmin() && !$user->isCustomer()) {
+            $user->notify(new NewUser($user));
+        }
     }
 
     /**
