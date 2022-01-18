@@ -7,6 +7,20 @@ use Carbon\Carbon;
 
 class VoucherlistEndpoint extends Connector
 {
+    public const VOUCHER_STATUS_OPEN = 'open';
+
+    public const VOUCHER_STATUS_OVERDUE = 'overdue';
+
+    public const VOUCHER_STATUS_PAID = 'paid';
+
+    public const VOUCHER_STATUS_PAIDOFF = 'paidoff';
+
+    public const VOUCHER_STATUS_VOIDED = 'voided';
+
+    public const VOUCHER_STATUS_TRANSFERRED = 'transferred';
+
+    public const VOUCHER_STATUS_SEPADEBIT = 'sepadebit';
+
     protected ?string $voucherType = null;
 
     protected ?string $voucherStatus = null;

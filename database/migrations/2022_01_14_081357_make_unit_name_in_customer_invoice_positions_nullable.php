@@ -32,6 +32,9 @@ class MakeUnitNameInCustomerInvoicePositionsNullable extends Migration
     {
         Schema::table('customer_invoice_positions', function (Blueprint $table) {
             $table->string('unit_name')->nullable(false)->change();
+            if(!\Doctrine\DBAL\Types\Type::hasType('double')) {
+                \Doctrine\DBAL\Types\Type::addType('double', FloatType::class);
+            }
             $table->double('discount_percentage')->nullable(false)->change();
         });
     }

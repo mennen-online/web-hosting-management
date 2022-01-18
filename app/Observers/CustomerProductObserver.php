@@ -12,12 +12,12 @@ class CustomerProductObserver
     /**
      * Handle the CustomerProduct "created" event.
      *
-     * @param \App\Models\CustomerProduct $customerProduct
+     * @param CustomerProduct $customerProduct
      * @return void
      */
     public function created(CustomerProduct $customerProduct)
     {
-        if ($customerProduct->domain->exists && !app()->runningUnitTests()) {
+        if ($customerProduct->domain->exists && !app()->runningUnitTests() && !app()->runningInConsole()) {
             $product = $customerProduct->product;
 
             if (class_exists($classname = 'App\\Services\\Product\\Models\\' . Str::kebab($product->name))) {
@@ -46,7 +46,7 @@ class CustomerProductObserver
     /**
      * Handle the CustomerProduct "updated" event.
      *
-     * @param \App\Models\CustomerProduct $customerProduct
+     * @param CustomerProduct $customerProduct
      * @return void
      */
     public function updated(CustomerProduct $customerProduct)
@@ -57,7 +57,7 @@ class CustomerProductObserver
     /**
      * Handle the CustomerProduct "deleted" event.
      *
-     * @param \App\Models\CustomerProduct $customerProduct
+     * @param CustomerProduct $customerProduct
      * @return void
      */
     public function deleted(CustomerProduct $customerProduct)
@@ -68,7 +68,7 @@ class CustomerProductObserver
     /**
      * Handle the CustomerProduct "restored" event.
      *
-     * @param \App\Models\CustomerProduct $customerProduct
+     * @param CustomerProduct $customerProduct
      * @return void
      */
     public function restored(CustomerProduct $customerProduct)
@@ -79,7 +79,7 @@ class CustomerProductObserver
     /**
      * Handle the CustomerProduct "force deleted" event.
      *
-     * @param \App\Models\CustomerProduct $customerProduct
+     * @param CustomerProduct $customerProduct
      * @return void
      */
     public function forceDeleted(CustomerProduct $customerProduct)

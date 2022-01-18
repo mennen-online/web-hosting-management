@@ -3,10 +3,14 @@
 namespace App\Console\Commands;
 
 use App\Models\Domain;
+use App\Models\DomainProduct;
 use App\Models\User;
 use App\Services\Internetworx\Objects\ContactObject;
 use App\Services\Internetworx\Objects\DomainObject;
+use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Str;
 
 class SyncInternetworxDomains extends Command
 {
@@ -28,6 +32,8 @@ class SyncInternetworxDomains extends Command
 
     protected ContactObject $contactObject;
 
+    protected Collection $domainProductCollection;
+
     /**
      * Create a new command instance.
      *
@@ -47,6 +53,8 @@ class SyncInternetworxDomains extends Command
     {
         config()->set('app.env', 'production');
 
+        $this->domainProductCollection = DomainProduct::all();
+
         $this->domainObject = app()->make(DomainObject::class);
 
         $this->contactObject = app()->make(ContactObject::class);
@@ -54,11 +62,18 @@ class SyncInternetworxDomains extends Command
         $this->withProgressBar(
             $this->domainObject->index(0, 5000),
             function ($domain) {
+                $domainProduct = $this->domainProductCollection->filter(function ($domainProduct) use ($domain) {
+                    if (Str::contains($domain['domain'], '.'.$domainProduct->tld)) {
+                        return $domainProduct;
+                    }
+                })->first();
+
                 $newDomain = Domain::firstOrCreate(
                     [
                         'name' => $domain['domain']
                     ],
                     [
+                        'domain_product_id' => $domainProduct->id,
                         'registrar_id' => $domain['roId']
                     ]
                 );
@@ -71,19 +86,21 @@ class SyncInternetworxDomains extends Command
                 if ($user === null) {
                     $newDomain->delete();
                 } else {
-                    $user->customerProducts()->updateOrCreate(
-                        [
-                            'customer_id' => $user->customer->id,
-                            'domain_id' => $newDomain->id,
-                        ],
-                        [
-                            'customer_id' => $user->customer->id,
-                            'domain_id' => $newDomain->id,
-                            'product_id' => null,
-                            'server_id' => null,
-                            'active' => true
-                        ]
-                    );
+                    $customerProduct = $user->customerProducts()->updateOrCreate([
+                        'customer_id' => $user->customer->id,
+                        'domain_id'   => $newDomain->id,
+                    ], [
+                        'customer_id' => $user->customer->id,
+                        'domain_id'   => $newDomain->id,
+                        'active'      => true
+                    ]);
+
+                    if ($customerProduct->wasRecentlyCreated) {
+                        $customerProduct->update([
+                            'product_id'  => null,
+                            'server_id'   => null,
+                        ]);
+                    }
                 }
             }
         );
