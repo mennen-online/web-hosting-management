@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class Lexoffice
 {
-    public static function getNewInvoiceNumbersByCustomer(Customer $customer)
+    public static function getNewInvoiceNumbersByCustomer(Customer $customer, bool $reSync = false)
     {
         $voucherlistEndpoint = app()->make(VoucherlistEndpoint::class);
 
@@ -33,16 +33,26 @@ class Lexoffice
             do {
                 $result = $voucherlistEndpoint->setPage($page)->index();
                 if ($result) {
-                    collect($result->content)->filter(function ($invoice) use ($customer) {
-                        if (!$customer->invoices()->where('lexoffice_id', $invoice->id)->exists()) {
+                    collect($result->content)->filter(function ($invoice) use ($customer, $reSync) {
+                        if (!$reSync && !$customer->invoices()->where('lexoffice_id', $invoice->id)->exists() || $reSync) {
                             $invoiceData = app()->make(InvoicesEndpoint::class)->get(new CustomerInvoice([
                                 'lexoffice_id' => $invoice->id
                             ]));
 
-                            DB::transaction(function () use ($invoiceData, $customer) {
-                                $customer->invoices()->create(
-                                    self::convertLexofficeInvoiceToCustomerInvoice($invoiceData)
-                                )->position()->createMany(
+                            DB::transaction(function () use ($invoiceData, $customer, $reSync) {
+                                $invoice = self::convertLexofficeInvoiceToCustomerInvoice($invoiceData);
+                                $customerInvoice = $customer->invoices()->updateOrCreate(
+                                    [
+                                        'lexoffice_id' => $invoice['lexoffice_id']
+                                    ],
+                                    $invoice
+                                );
+
+                                if($reSync) {
+                                    $customerInvoice->position()->delete();
+                                }
+
+                                $customerInvoice->position()->createMany(
                                     self::convertLexofficeInvoiceLineItemToCustomerInvoicePosition(
                                         $invoiceData->lineItems
                                     )

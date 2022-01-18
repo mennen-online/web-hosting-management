@@ -37,7 +37,7 @@ class SyncInvoices extends Action
      */
     public function handle(ActionFields $fields, Collection $models)
     {
-        $models->each(fn($customer) => $this->syncInvoices($customer));
+        $models->each(fn($customer) => Lexoffice::getNewInvoiceNumbersByCustomer($customer, true));
 
         return Action::message("Invoices Synchronised successful");
     }
@@ -50,14 +50,5 @@ class SyncInvoices extends Action
     public function fields()
     {
         return [];
-    }
-
-    private function syncInvoices($customer)
-    {
-        $invoiceNumbers = Lexoffice::getNewInvoiceNumbersByCustomer($customer);
-
-        if ($invoiceNumbers->count() > 0) {
-            Lexoffice::importInvoices($customer, $invoiceNumbers);
-        }
     }
 }
