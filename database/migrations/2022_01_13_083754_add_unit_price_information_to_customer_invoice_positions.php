@@ -30,7 +30,7 @@ class AddUnitPriceInformationToCustomerInvoicePositions extends Migration
     public function down()
     {
         Schema::table('customer_invoice_positions', function (Blueprint $table) {
-            $table->json('unit_price')->after('unit_name');
+            $table->json('unit_price')->nullable()->after('unit_name');
             CustomerInvoicePosition::all()->each(function($position) {
                 $position->update([
                     'unit_price' => json_encode([

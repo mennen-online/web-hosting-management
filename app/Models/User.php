@@ -14,6 +14,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
+ *
  * @property Customer $customer
  * @property Collection $roles
  * @property Collection $customerContacts
@@ -118,5 +119,10 @@ class User extends Authenticatable
     public function getNameAttribute()
     {
         return $this->first_name . ' ' . $this->last_name;
+    }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
     }
 }

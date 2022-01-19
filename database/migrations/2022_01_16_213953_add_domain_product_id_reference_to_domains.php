@@ -15,7 +15,7 @@ class AddDomainProductIdReferenceToDomains extends Migration
     public function up()
     {
         Schema::table('domains', function (Blueprint $table) {
-            $table->foreignIdFor(DomainProduct::class)->after('id');
+            $table->foreignIdFor(DomainProduct::class)->nullable()->after('id');
         });
     }
 
