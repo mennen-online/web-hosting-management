@@ -77,4 +77,8 @@ class Domain extends Model
     {
         return $this->hasOne(CustomerProduct::class);
     }
+
+    public function tasks() {
+        return $this->morphMany(Task::class, 'taskable');
+    }
 }

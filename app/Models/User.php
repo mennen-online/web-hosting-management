@@ -104,4 +104,8 @@ class User extends Authenticatable
     {
         return $this->first_name . ' ' . $this->last_name;
     }
+
+    public function tasks() {
+        return $this->hasMany(Task::class);
+    }
 }

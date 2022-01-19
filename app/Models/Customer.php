@@ -167,4 +167,8 @@ class Customer extends Model
     {
         return $this->hasMany(CustomerInvoice::class);
     }
+
+    public function tasks() {
+        return $this->morphMany(Task::class, 'taskable');
+    }
 }
