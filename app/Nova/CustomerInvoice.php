@@ -4,6 +4,7 @@ namespace App\Nova;
 
 use App\Nova\Actions\Invoices\DownloadInvoice;
 use App\Nova\Actions\Invoices\OpenInLexoffice;
+use App\Nova\Filters\CustomerInvoice\Overdue;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Laravel\Nova\Fields\BelongsTo;
@@ -31,7 +32,7 @@ class CustomerInvoice extends Resource
      *
      * @var string
      */
-    public static $title = 'id';
+    public static $title = 'voucher_number';
 
     /**
      * The columns that should be searched.
@@ -52,7 +53,6 @@ class CustomerInvoice extends Resource
     {
         $fields = [
             BelongsTo::make(__('Customer')),
-            ID::make(__('ID'), 'id')->sortable(),
             Text::make('Rechnungsnummer', 'voucher_number')->readonly(true),
             Date::make('Rechnungsdatum', 'voucher_date')->readonly(true),
             Currency::make('Gesamtbetrag inkl. MwSt.', 'total_gross_amount')->currency('EUR')->readonly(true),
@@ -108,7 +108,9 @@ class CustomerInvoice extends Resource
      */
     public function filters(Request $request)
     {
-        return [];
+        return [
+            new Overdue()
+        ];
     }
 
     /**
