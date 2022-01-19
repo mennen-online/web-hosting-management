@@ -19,10 +19,10 @@ class Overdue extends BooleanFilter
      */
     public function apply(Request $request, $query, $value)
     {
-        $ids = $value['overdue'] ? $query->get()->filter(function($customerInvoice){
+        $ids = $value['overdue'] ? $query->get()->filter(function ($customerInvoice) {
             $value = Carbon::now();
             $dueDate = Carbon::parse($customerInvoice->voucher_date)->addDays($customerInvoice->payment_term_duration);
-            if(!$value->isBefore($dueDate)) {
+            if (!$value->isBefore($dueDate)) {
                 return $customerInvoice;
             }
         })->pluck('id') : collect();
