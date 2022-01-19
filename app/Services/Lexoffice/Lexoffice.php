@@ -34,7 +34,8 @@ class Lexoffice
                 $result = $voucherlistEndpoint->setPage($page)->index();
                 if ($result) {
                     collect($result->content)->filter(function ($invoice) use ($customer, $reSync) {
-                        if (!$reSync && !$customer->invoices()->where('lexoffice_id', $invoice->id)->exists() || $reSync) {
+                        if (!$reSync && !$customer->invoices()->where('lexoffice_id', $invoice->id)->exists()
+                            || $reSync) {
                             $invoiceData = app()->make(InvoicesEndpoint::class)->get(new CustomerInvoice([
                                 'lexoffice_id' => $invoice->id
                             ]));
@@ -48,7 +49,7 @@ class Lexoffice
                                     $invoice
                                 );
 
-                                if($reSync) {
+                                if ($reSync) {
                                     $customerInvoice->position()->delete();
                                 }
 
