@@ -42,7 +42,7 @@ class CustomerProduct extends Model
 
         self::creating(
             function (CustomerProduct $customerProduct) {
-                if ($customerProduct->product_id === null) {
+                if ($customerProduct->product_id === null && !app()->runningInConsole()) {
                     $domain = Domain::find($customerProduct->domain_id);
 
                     $domainName = explode('.', $domain->name);
@@ -104,5 +104,17 @@ class CustomerProduct extends Model
     public function domain()
     {
         return $this->belongsTo(Domain::class);
+    }
+
+    public function domainProduct()
+    {
+        return $this->hasOneThrough(
+            DomainProduct::class,
+            Domain::class,
+            'id',
+            'id',
+            'domain_id',
+            'domain_product_id'
+        );
     }
 }

@@ -93,11 +93,19 @@ class DomainObject extends Connector
         Log::info(json_encode($response));
     }
 
-    public function indexPrice()
+    public function indexPrice(?string $tld = null)
     {
         $this->prepareRequest();
 
-        $response = $this->domrobot->call('domain', 'getPrices');
+        $params = [
+            'vatCC' => 'DE'
+        ];
+
+        if ($tld) {
+            $params['tld'] = $tld;
+        }
+
+        $response = $this->domrobot->call('domain', 'getPrices', $params);
 
         return $this->processResponse($response, 'price');
     }

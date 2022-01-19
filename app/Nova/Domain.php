@@ -55,6 +55,7 @@ class Domain extends Resource
     {
         return [
             ID::make(__('ID'), 'id')->sortable(),
+            BelongsTo::make(__('Domain Product'), 'domainProduct'),
             BelongsTo::make(
                 __('Customer Product'),
                 'customerProduct'
@@ -74,13 +75,15 @@ class Domain extends Resource
                 'domainname',
                 function ($request) {
                     $domain = $request->input('name');
-                    if (!\App\Models\Product::where('description', 'LIKE', '%Domain%')->first()) {
+                    $domainProducts = \App\Models\DomainProduct::all();
+                    if ($domainProducts->count() === 0) {
                         Artisan::call('internetworx:domains:price:sync');
+                        $domainProducts = \App\Models\DomainProduct::all();
                     }
                     /**
                      * @phpstan-ignore-next-line
                      */
-                    $tlds = \App\Models\Product::where('description', 'LIKE', '%Domain%')->get()->pluck('name')->map(
+                    $tlds = $domainProducts->pluck('tld')->map(
                         function ($tld) {
                             return '.' . $tld;
                         }
@@ -94,7 +97,7 @@ class Domain extends Resource
                             Currency::make(
                                 __('Price'),
                                 function () use ($price) {
-                                    return number_format($price['price'], 2);
+                                    return number_format($price['price'], 2) * 1.25;
                                 }
                             )->currency($price['currency'])->readonly(true),
                             Text::make(
