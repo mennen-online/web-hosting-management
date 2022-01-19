@@ -8,6 +8,7 @@ use App\Models\CustomerContact;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class CustomerFactory extends Factory
 {
@@ -34,22 +35,15 @@ class CustomerFactory extends Factory
         ];
     }
 
-    public function configure()
-    {
-        return $this->afterCreating(function (Customer $customer) {
-            CustomerAddress::factory()->create([
-                'customer_id' => $customer->id,
-                'type' => 'billing',
-                'street' => $this->faker->streetAddress,
-                'supplement' => '',
-                'zip' => $this->faker->postcode,
-                'city' => $this->faker->city,
-                'country_code' => $this->faker->countryCode
-            ]);
-
-            $customer = Customer::find($customer->id);
-
-            CustomerContact::factory()->for($customer)->create();
+    public function company() {
+        return $this->state(function (array $attributes) {
+            return [
+                'customer_type' => 'company',
+                'companyName' => $this->faker->company,
+                'allowTaxFreeInvoices' => $this->faker->boolean,
+                'taxNumber' => $this->faker->numberBetween(),
+                'vatRegistrationId' => 'DE'.$this->faker->numberBetween(100000000, 999999999)
+            ];
         });
     }
 }
