@@ -18,6 +18,7 @@ class Domain extends Model
      * @var string[]
      */
     protected $fillable = [
+        'domain_product_id',
         'registrar_id',
         'name'
     ];

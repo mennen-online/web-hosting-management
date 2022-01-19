@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\DomainProduct;
 use App\Models\Product;
 use App\Services\Internetworx\Objects\DomainObject;
 use Illuminate\Console\Command;
@@ -44,6 +45,8 @@ class SyncInternetworxDomainsPrices extends Command
 
         $response = $domainObject->indexPrice();
 
+        $this->line('Get Info for TLDs');
+
         $prices = $response->filter(
             function ($price) {
                 if (!Arr::has($price, 'tld-ace') && !empty($price['tld'])) {
@@ -52,21 +55,30 @@ class SyncInternetworxDomainsPrices extends Command
             }
         );
 
-        $this->info("Process Domainprices");
-        $this->withProgressBar(
-            $prices,
-            function ($price) {
-                Product::updateOrCreate(
-                    [
-                        'name' => $price['tld']
-                    ],
-                    [
-                        'description' => "Domain " . $price['tld'],
-                        'price' => number_format($price['createPrice'], 2, '.', '')
-                    ]
-                );
-            }
-        );
+        $this->withProgressBar($prices, function ($price) {
+            $domainBase = Arr::only($price, [
+                'tld',
+                'currency'
+            ]);
+
+            $data = array_merge(
+                $domainBase,
+                [
+                    'period' => '1Y',
+                    'reg_price' => Arr::get($price, 'createPrice', 0.00),
+                    'renewal_price' => Arr::get($price, 'renewalPrice', 0.00),
+                    'update_price' => Arr::get($price, 'updatePrice', 0.00),
+                    'trade_price' => Arr::get($price, 'tradePrice', 0.00),
+                    'transfer_price' => Arr::get($price, 'transferPrice', 0.00),
+                    'whois_protection_price' => Arr::get($price, 'whoisProtectionPrice', 0.00),
+                    'restore_price' => Arr::get($price, 'restorePrice', 0.00)
+                ]
+            );
+
+            DomainProduct::updateOrCreate(
+                $data
+            );
+        });
         return 0;
     }
 }
