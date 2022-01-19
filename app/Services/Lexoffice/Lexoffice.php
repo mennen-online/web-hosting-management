@@ -40,25 +40,7 @@ class Lexoffice
                                 'lexoffice_id' => $invoice->id
                             ]));
 
-                            DB::transaction(function () use ($invoiceData, $customer, $reSync) {
-                                $invoice = self::convertLexofficeInvoiceToCustomerInvoice($invoiceData);
-                                $customerInvoice = $customer->invoices()->updateOrCreate(
-                                    [
-                                        'lexoffice_id' => $invoice['lexoffice_id']
-                                    ],
-                                    $invoice
-                                );
-
-                                if ($reSync) {
-                                    $customerInvoice->position()->delete();
-                                }
-
-                                $customerInvoice->position()->createMany(
-                                    self::convertLexofficeInvoiceLineItemToCustomerInvoicePosition(
-                                        $invoiceData->lineItems
-                                    )
-                                );
-                            });
+                            self::storeCustomerInvoice($invoiceData, $customer, $reSync);
                         }
                     });
                 }
@@ -133,5 +115,27 @@ class Lexoffice
         }
 
         return $positions;
+    }
+
+    /**
+     * @param object $invoiceData
+     * @param Customer $customer
+     * @param bool|null $reSync
+     * @return void
+     */
+    public static function storeCustomerInvoice(object $invoiceData, Customer $customer, ?bool $reSync): void
+    {
+        DB::transaction(function () use ($invoiceData, $customer, $reSync) {
+            $invoice = self::convertLexofficeInvoiceToCustomerInvoice($invoiceData);
+            $customerInvoice = $customer->invoices()->updateOrCreate([
+                    'lexoffice_id' => $invoice['lexoffice_id']
+                ], $invoice);
+
+            if ($reSync) {
+                $customerInvoice->position()->delete();
+            }
+
+            $customerInvoice->position()->createMany(self::convertLexofficeInvoiceLineItemToCustomerInvoicePosition($invoiceData->lineItems));
+        });
     }
 }
