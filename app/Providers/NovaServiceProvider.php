@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Notifications\User\NewUser;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Nova\Cards\Help;
@@ -26,8 +27,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
                 return [
                     $command->ask('First Name'),
                     $command->ask('Last Name'),
-                    $command->ask('Email Address'),
-                    $command->secret('Password')
+                    $command->ask('Email Address')
                 ];
             },
             function ($firstName, $lastName, $email, $password) {
@@ -36,7 +36,7 @@ class NovaServiceProvider extends NovaApplicationServiceProvider
                         'first_name' => $firstName,
                         'last_name' => $lastName,
                         'email' => $email,
-                        'password' => Hash::make($password)
+                        'password' => Hash::make($email)
                     ]
                 );
 
