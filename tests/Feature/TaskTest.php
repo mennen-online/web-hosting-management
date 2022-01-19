@@ -48,7 +48,7 @@ class TaskTest extends TestCase
 
         $this->assertModelExists($task);
 
-        $this->assertModelExists($task->task_topic);
+        $this->assertModelExists($task->taskTopic);
     }
 
     public function testCreateTasksForCustomerWithToDoByDate()
@@ -64,7 +64,7 @@ class TaskTest extends TestCase
 
         $this->assertModelExists($task);
 
-        $this->assertModelExists($task->task_topic);
+        $this->assertModelExists($task->taskTopic);
 
         $date = Carbon::parse($task->to_do_by);
 
