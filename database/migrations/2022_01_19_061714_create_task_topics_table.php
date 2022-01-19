@@ -21,7 +21,7 @@ class CreateTaskTopicsTable extends Migration
         });
 
         Schema::table('tasks', function (Blueprint $table) {
-            $table->foreignIdFor(TaskTopic::class)->after('user_id');
+            $table->foreignIdFor(TaskTopic::class)->nullable()->after('user_id');
         });
     }
 
