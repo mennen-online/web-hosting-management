@@ -140,7 +140,9 @@ class CustomerInvoice extends Resource
                     return true;
                 }
 
-                return $this->resource instanceof \App\Models\CustomerInvoice && Carbon::parse($this->resource->voucher_date)->addDays($this->resource->payment_term_duration)->isBefore(now());
+                return $this->resource instanceof \App\Models\CustomerInvoice
+                    && Carbon::parse($this->resource->voucher_date)
+                        ->addDays($this->resource->payment_term_duration)->isBefore(now());
             })
         ];
     }

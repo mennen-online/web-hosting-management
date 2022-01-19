@@ -135,7 +135,9 @@ class Lexoffice
                 $customerInvoice->position()->delete();
             }
 
-            $customerInvoice->position()->createMany(self::convertLexofficeInvoiceLineItemToCustomerInvoicePosition($invoiceData->lineItems));
+            $customerInvoice->position()->createMany(
+                self::convertLexofficeInvoiceLineItemToCustomerInvoicePosition($invoiceData->lineItems)
+            );
         });
     }
 }
