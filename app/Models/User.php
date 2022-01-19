@@ -14,6 +14,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
+ *
  * @property Customer $customer
  * @property Collection $roles
  * @property Collection $customerContacts

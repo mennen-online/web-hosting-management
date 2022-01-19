@@ -9,6 +9,7 @@ use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\HasMany;
 use Laravel\Nova\Fields\HasOne;
 use Laravel\Nova\Fields\ID;
+use Laravel\Nova\Fields\MorphMany;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Fields\Trix;
@@ -57,6 +58,14 @@ class Customer extends Resource
             Text::make(__('Straße & Nr.'), 'address.street')->readonly(true),
             Text::make(__('PLZ'), 'address.zip')->readonly(true),
             Text::make(__('Ort'), 'address.city')->readonly(true),
+            new Panel(
+                __('Tasks'),
+                function() {
+                    return [
+                        MorphMany::make(__('Tasks'))
+                    ];
+                }
+            ),
             new Panel(
                 __('Billing'),
                 function () {

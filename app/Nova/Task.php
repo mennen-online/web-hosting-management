@@ -2,9 +2,12 @@
 
 namespace App\Nova;
 
+use App\Nova\Filters\Task\Due;
+use Auth;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Http\Request;
 use Laravel\Nova\Fields\BelongsTo;
+use Laravel\Nova\Fields\Boolean;
 use Laravel\Nova\Fields\Date;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\MorphTo;
@@ -46,7 +49,9 @@ class Task extends Resource
     {
         return [
             ID::make(__('ID'), 'id')->sortable(),
-            BelongsTo::make(__('User')),
+            BelongsTo::make(__('User'))->default(function() {
+                return Auth::user()->id;
+            }),
             MorphTo::make('Taskable')->types([
                 Customer::class,
                 CustomerInvoice::class,
@@ -56,10 +61,12 @@ class Task extends Resource
                 Domain::class,
                 Server::class
             ]),
-            HasOne::make(__('Task Topic')),
+            BelongsTo::make(__('Task Topic')),
             Text::make(__('Title')),
             Text::make(__('Content')),
-            Date::make(__('ToDo By'))
+            Date::make(__('ToDo By'))->nullable(),
+            Boolean::make(__('Done'))->showOnUpdating(true)->showOnCreating(false),
+            Date::make(__('Done At'))->readonly(true)
         ];
     }
 
@@ -82,7 +89,9 @@ class Task extends Resource
      */
     public function filters(Request $request)
     {
-        return [];
+        return [
+            Due::make()
+        ];
     }
 
     /**

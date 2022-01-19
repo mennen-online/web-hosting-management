@@ -16,11 +16,13 @@ class Task extends Model
         'taskable_id',
         'title',
         'content',
-        'to_do_by'
+        'to_do_by',
+        'done',
+        'done_at'
     ];
 
-    public function topic() {
-        return $this->belongsTo(TaskTopic::class);
+    public function task_topic() {
+        return $this->belongsTo(TaskTopic::class, 'task_topic_id');
     }
 
     public function user() {
