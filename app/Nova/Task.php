@@ -45,11 +45,14 @@ class Task extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function fields(Request $request)
+    public function fields(Request $request): array
     {
         return [
             ID::make(__('ID'), 'id')->sortable(),
-            BelongsTo::make(__('User'))->default(function() {
+            BelongsTo::make(__('User'))->default(function () {
+                /**
+                 * @phpstan-ignore-next-line
+                 */
                 return Auth::user()->id;
             }),
             MorphTo::make('Taskable')->types([
@@ -61,7 +64,7 @@ class Task extends Resource
                 Domain::class,
                 Server::class
             ]),
-            BelongsTo::make(__('Task Topic')),
+            BelongsTo::make(__('Task Topic'), 'taskTopic'),
             Text::make(__('Title')),
             Text::make(__('Content')),
             Date::make(__('ToDo By'))->nullable(),
@@ -76,7 +79,7 @@ class Task extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function cards(Request $request)
+    public function cards(Request $request): array
     {
         return [];
     }
@@ -87,7 +90,7 @@ class Task extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function filters(Request $request)
+    public function filters(Request $request): array
     {
         return [
             Due::make()
@@ -100,7 +103,7 @@ class Task extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function lenses(Request $request)
+    public function lenses(Request $request): array
     {
         return [];
     }
@@ -111,7 +114,7 @@ class Task extends Resource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function actions(Request $request)
+    public function actions(Request $request): array
     {
         return [];
     }

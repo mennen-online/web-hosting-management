@@ -21,7 +21,8 @@ class TaskFactory extends Factory
         ];
     }
 
-    public function withToDoBy() {
+    public function withToDoBy()
+    {
         return $this->state(function (array $attributes) {
             return [
                 'to_do_by' => $this->faker->dateTimeBetween('now', '+1 years')

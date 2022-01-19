@@ -48,7 +48,8 @@ class CustomerContact extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    public function tasks() {
+    public function tasks()
+    {
         return $this->morphMany(Task::class, 'taskable');
     }
 }

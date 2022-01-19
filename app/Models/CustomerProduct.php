@@ -106,7 +106,8 @@ class CustomerProduct extends Model
         return $this->belongsTo(Domain::class);
     }
 
-    public function tasks() {
+    public function tasks()
+    {
         return $this->morphMany(Task::class, 'taskable');
     }
 }

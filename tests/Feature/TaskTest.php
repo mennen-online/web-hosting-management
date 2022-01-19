@@ -35,7 +35,8 @@ class TaskTest extends TestCase
         TaskTopic::factory()->count(10)->create();
     }
 
-    public function testCreateTasksForCustomer() {
+    public function testCreateTasksForCustomer()
+    {
         $user = User::factory()->has(Customer::factory())->create();
 
         $task = Task::factory()
@@ -50,7 +51,8 @@ class TaskTest extends TestCase
         $this->assertModelExists($task->task_topic);
     }
 
-    public function testCreateTasksForCustomerWithToDoByDate() {
+    public function testCreateTasksForCustomerWithToDoByDate()
+    {
         $user = User::factory()->has(Customer::factory())->create();
 
         $task = Task::factory()

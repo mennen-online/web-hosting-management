@@ -21,15 +21,18 @@ class Task extends Model
         'done_at'
     ];
 
-    public function task_topic() {
+    public function taskTopic()
+    {
         return $this->belongsTo(TaskTopic::class, 'task_topic_id');
     }
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function taskable() {
+    public function taskable()
+    {
         return $this->morphTo();
     }
 }

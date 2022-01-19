@@ -60,7 +60,7 @@ class Customer extends Resource
             Text::make(__('Ort'), 'address.city')->readonly(true),
             new Panel(
                 __('Tasks'),
-                function() {
+                function () {
                     return [
                         MorphMany::make(__('Tasks'))
                     ];

@@ -13,7 +13,8 @@ class TaskTopic extends Model
         'title'
     ];
 
-    public function task() {
+    public function task()
+    {
         return $this->hasMany(Task::class);
     }
 }

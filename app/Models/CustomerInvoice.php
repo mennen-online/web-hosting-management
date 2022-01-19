@@ -68,7 +68,8 @@ class CustomerInvoice extends Model
         return $this->hasMany(CustomerInvoicePosition::class);
     }
 
-    public function tasks() {
+    public function tasks()
+    {
         return $this->morphMany(Task::class, 'taskable');
     }
 }
