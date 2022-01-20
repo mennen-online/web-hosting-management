@@ -26,7 +26,7 @@ class CreateCustomerTest extends TestCase
 
         $this->assertModelExists($user->customer->address);
 
-        $this->assertModelExists($user->customer->contacts()->first());
+        $this->assertModelExists($user->customer->contacts->first());
     }
 
     public function testCreateCompanyCustomer() {
@@ -42,6 +42,6 @@ class CreateCustomerTest extends TestCase
 
         $this->assertModelExists($user->customer->address);
 
-        $this->assertModelExists($user->customer->contacts()->first());
+        $this->assertModelExists($user->customer->contacts->first());
     }
 }

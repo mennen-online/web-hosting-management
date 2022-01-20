@@ -29,7 +29,7 @@ class DomainProduct extends Model
         'restore_price',
         'transfer_price',
         'trade_price',
-        'whoisProtectionPrice'
+        'whois_protection_price'
     ];
 
     /**
