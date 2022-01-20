@@ -36,4 +36,9 @@ class Server extends Model
     {
         return $this->hasMany(CustomerProduct::class);
     }
+
+    public function tasks()
+    {
+        return $this->morphMany(Task::class, 'taskable');
+    }
 }
