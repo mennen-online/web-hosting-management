@@ -6,9 +6,11 @@ use App\Models\Customer;
 use App\Models\CustomerInvoice;
 use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use App\Services\Lexoffice\Endpoints\VoucherlistEndpoint;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class Lexoffice
 {
@@ -123,7 +125,7 @@ class Lexoffice
      * @param bool|null $reSync
      * @return void
      */
-    public static function storeCustomerInvoice(object $invoiceData, Customer $customer, ?bool $reSync): void
+    public static function storeCustomerInvoice(object $invoiceData, Customer $customer, ?bool $reSync = false): void
     {
         DB::transaction(function () use ($invoiceData, $customer, $reSync) {
             $invoice = self::convertLexofficeInvoiceToCustomerInvoice($invoiceData);
@@ -139,5 +141,13 @@ class Lexoffice
                 self::convertLexofficeInvoiceLineItemToCustomerInvoicePosition($invoiceData->lineItems)
             );
         });
+    }
+
+    public static function buildLexofficeDate(?Carbon $carbon = null) {
+        $date = date('c', strtotime($carbon->format('Y-m-d\TH:i:s.vO')));
+
+        $milliseconds = Str::substr($carbon->format('v'), 0, 3);
+
+        return Str::replace('+', '.' . $milliseconds . '+', $date);
     }
 }

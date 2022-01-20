@@ -5,17 +5,20 @@ namespace Tests\Feature\CustomerInvoice;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
 use App\Models\CustomerContact;
+use App\Models\CustomerInvoice;
 use App\Models\CustomerProduct;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\Lexoffice\Endpoints\ContactsEndpoint;
+use App\Services\Lexoffice\Endpoints\DunningEndpoint;
 use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
+use App\Services\Lexoffice\Lexoffice;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
-class CreateCustomerInvoiceTest extends TestCase
+class CreateCustomerInvoiceDunningTest extends TestCase
 {
     protected $user;
 
@@ -46,9 +49,7 @@ class CreateCustomerInvoiceTest extends TestCase
 
             $this->user->customer->contacts->first()->update(['lexoffice_id' => $contact->id]);
         }
-    }
 
-    public function testCreateInvoice() {
         $customerProduct = CustomerProduct::factory()
             ->for($this->user->customer)
             ->for(Product::factory())
@@ -56,6 +57,18 @@ class CreateCustomerInvoiceTest extends TestCase
 
         $this->assertModelExists($customerProduct);
 
-        app()->make(InvoicesEndpoint::class)->create($customerProduct);
+        Lexoffice::storeCustomerInvoice(
+            app()->make(InvoicesEndpoint::class)->get(
+                new CustomerInvoice(['lexoffice_id' => app()->make(InvoicesEndpoint::class)
+                    ->create($customerProduct)->id])
+            ),
+            $customerProduct->customer
+        );
+    }
+
+    public function testCreateInvoiceDunning() {
+        $result = app()->make(DunningEndpoint::class)->create($this->user->customer->invoices->first());
+
+        dd($result);
     }
 }

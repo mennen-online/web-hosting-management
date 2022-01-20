@@ -7,7 +7,9 @@ use App\Models\CustomerInvoice;
 use App\Models\CustomerProduct;
 use App\Services\Internetworx\Objects\DomainObject;
 use App\Services\Lexoffice\Connector;
+use App\Services\Lexoffice\Lexoffice;
 use Carbon\Carbon;
+use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -46,10 +48,10 @@ class InvoicesEndpoint extends Connector
         return 'https://app.lexoffice.de/permalink/invoices/view/' . $customerInvoice->lexoffice_id;
     }
 
-    public function create(CustomerProduct $customerProduct)
+    public function create(CustomerProduct $customerProduct, ?Carbon $voucherDate = null)
     {
         $data = [
-            'voucherDate' => $this->buildLexofficeDate(now()),
+            'voucherDate' => Lexoffice::buildLexofficeDate($voucherDate ?? now()),
             'address' => $this->buildAddress($customerProduct),
             'lineItems' => $this->buildLineItems($customerProduct),
             'totalPrice' => $this->buildTotalPrice(),
@@ -126,18 +128,9 @@ class InvoicesEndpoint extends Connector
     private function buildShippingConditions()
     {
         return [
-            'shippingType' => 'serviceperiod',
-            'shippingDate' => $this->buildLexofficeDate(now()),
-            'shippingEndDate' => $this->buildLexofficeDate(now()->addYear())
+            'shippingType'    => 'serviceperiod',
+            'shippingDate'    => Lexoffice::buildLexofficeDate(now()),
+            'shippingEndDate' => Lexoffice::buildLexofficeDate(now()->addYear())
         ];
-    }
-
-    private function buildLexofficeDate(Carbon $carbon)
-    {
-        $date = date('c', strtotime($carbon->format('Y-m-d\TH:i:s.vO')));
-
-        $milliseconds = Str::substr($carbon->format('v'), 0, 3);
-
-        return Str::replace('+', '.' . $milliseconds . '+', $date);
     }
 }

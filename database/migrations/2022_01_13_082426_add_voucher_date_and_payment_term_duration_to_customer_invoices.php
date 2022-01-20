@@ -24,6 +24,8 @@ class AddVoucherDateAndPaymentTermDurationToCustomerInvoices extends Migration
         });
         Schema::table('customer_invoices', function (Blueprint $table) {
             $table->renameColumn('voucherNumber', 'voucher_number');
+        });
+        Schema::table('customer_invoices', function (Blueprint $table) {
             $table->integer('payment_term_duration')->nullable()->default(null)->after('total_tax_amount');
             $table->date('voucher_date')->nullable()->default(null)->after('total_tax_amount');
         });

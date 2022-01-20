@@ -4,6 +4,7 @@ namespace App\Services\Lexoffice\Endpoints;
 
 use App\Models\CustomerInvoice;
 use App\Services\Lexoffice\Connector;
+use App\Services\Lexoffice\Lexoffice;
 
 class DunningEndpoint extends Connector
 {
@@ -17,7 +18,7 @@ class DunningEndpoint extends Connector
         $invoiceData = app()->make(InvoicesEndpoint::class)->get($customerInvoice);
 
         $data = [
-            'voucherDate' => now()->toIso8601String(),
+            'voucherDate' => Lexoffice::buildLexofficeDate(now()),
             'address' => [
                 'contactId' => $customerInvoice->customer->lexoffice_id
             ],

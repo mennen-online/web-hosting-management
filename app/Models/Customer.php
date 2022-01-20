@@ -88,12 +88,10 @@ class Customer extends Model
                     ];
                 }
 
-                if (isset($customer->customer_type)) {
-                    $fillableFields = $customer->getFillable();
-                    foreach ($customer->attributes as $attribute => $value) {
-                        if (!in_array($attribute, $fillableFields)) {
-                            unset($customer->attributes[$attribute]);
-                        }
+                $fillableFields = $customer->getFillable();
+                foreach ($customer->attributes as $attribute => $value) {
+                    if (!in_array($attribute, $fillableFields)) {
+                        unset($customer->attributes[$attribute]);
                     }
                 }
             }
