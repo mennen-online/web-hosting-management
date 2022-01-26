@@ -143,7 +143,8 @@ class Lexoffice
         });
     }
 
-    public static function buildLexofficeDate(?Carbon $carbon = null) {
+    public static function buildLexofficeDate(?Carbon $carbon = null)
+    {
         $date = date('c', strtotime($carbon->format('Y-m-d\TH:i:s.vO')));
 
         $milliseconds = Str::substr($carbon->format('v'), 0, 3);

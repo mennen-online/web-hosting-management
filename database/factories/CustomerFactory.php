@@ -35,7 +35,8 @@ class CustomerFactory extends Factory
         ];
     }
 
-    public function company() {
+    public function company()
+    {
         return $this->state(function (array $attributes) {
             return [
                 'customer_type' => 'company',

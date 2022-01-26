@@ -49,13 +49,19 @@ class CreateCustomerInvoiceDunningTest extends TestCase
         ]);
 
         if (!$this->user = User::whereHas('customer')->first()) {
-            $this->user = User::factory()->has(Customer::factory()->has($this->contact = CustomerContact::factory(),
-                'contacts')->has($address = CustomerAddress::factory(), 'address'))->create();
+            $this->user = User::factory()->has(Customer::factory()->has(
+                $this->contact = CustomerContact::factory(),
+                'contacts'
+            )->has($address = CustomerAddress::factory(), 'address'))->create();
 
-            $contact = app()->make(ContactsEndpoint::class)->createOrUpdateCompanyBillingAddress($this->user->customer,
-                $this->user->customer->address->supplement, $this->user->customer->address->street,
-                $this->user->customer->address->zip, $this->user->customer->address->city,
-                $this->user->customer->address->country_code);
+            $contact = app()->make(ContactsEndpoint::class)->createOrUpdateCompanyBillingAddress(
+                $this->user->customer,
+                $this->user->customer->address->supplement,
+                $this->user->customer->address->street,
+                $this->user->customer->address->zip,
+                $this->user->customer->address->city,
+                $this->user->customer->address->country_code
+            );
 
             $this->user->customer->contacts->first()->update(['lexoffice_id' => $contact->id]);
         }
@@ -74,10 +80,10 @@ class CreateCustomerInvoiceDunningTest extends TestCase
             ),
             $customerProduct->customer
         );
-
     }
 
-    public function testCreateInvoiceDunning() {
+    public function testCreateInvoiceDunning()
+    {
         $result = app()->make(DunningEndpoint::class)->create($this->user->customer->invoices->first());
 
         $invoice = app()->make(InvoicesEndpoint::class)->get($this->user->customer->invoices()->first());
@@ -86,8 +92,8 @@ class CreateCustomerInvoiceDunningTest extends TestCase
 
         $dunning = app()->make(DunningEndpoint::class)->get($result->id);
 
-        $voucherNumber = collect($invoice->relatedVouchers)->filter(function($relatedVoucher) use($dunning) {
-            if($relatedVoucher->id === $dunning->id) {
+        $voucherNumber = collect($invoice->relatedVouchers)->filter(function ($relatedVoucher) use ($dunning) {
+            if ($relatedVoucher->id === $dunning->id) {
                 return $relatedVoucher;
             }
         })->first()->voucherNumber;

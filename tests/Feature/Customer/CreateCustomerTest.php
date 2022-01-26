@@ -12,7 +12,8 @@ use Tests\TestCase;
 
 class CreateCustomerTest extends TestCase
 {
-    public function testCreatePersonCustomer() {
+    public function testCreatePersonCustomer()
+    {
         $user = User::factory()
             ->has(
                 $customer = Customer::factory()
@@ -29,12 +30,12 @@ class CreateCustomerTest extends TestCase
         $this->assertModelExists($user->customer->contacts->first());
     }
 
-    public function testCreateCompanyCustomer() {
+    public function testCreateCompanyCustomer()
+    {
         $user = User::factory()
             ->has($customer = Customer::factory()->company()
                 ->has($customerAddress = CustomerAddress::factory(), 'address')
-                ->has($customerContact = CustomerContact::factory(), 'contacts')
-            )->create();
+                ->has($customerContact = CustomerContact::factory(), 'contacts'))->create();
 
         $this->assertModelExists($user);
 

@@ -27,7 +27,7 @@ class CreateCustomerInvoiceTest extends TestCase
 
         Artisan::call('lexoffice:contacts:sync');
 
-        if(!$this->user = User::whereHas('customer')->first()) {
+        if (!$this->user = User::whereHas('customer')->first()) {
             $this->user = User::factory()
                 ->has(
                     Customer::factory()
@@ -48,7 +48,8 @@ class CreateCustomerInvoiceTest extends TestCase
         }
     }
 
-    public function testCreateInvoice() {
+    public function testCreateInvoice()
+    {
         $customerProduct = CustomerProduct::factory()
             ->for($this->user->customer)
             ->for(Product::factory())
