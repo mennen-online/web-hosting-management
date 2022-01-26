@@ -8,38 +8,17 @@ use App\Services\Lexoffice\Lexoffice;
 
 class DunningEndpoint extends Connector
 {
-    public function get(CustomerInvoice $customerInvoice)
+    public function get(string $id)
     {
-        return $this->getRequest('/dunnings/'.$customerInvoice->lexoffice_id);
+        return $this->getRequest('/dunnings/'.$id);
     }
 
     public function create(CustomerInvoice $customerInvoice)
     {
         $invoiceData = app()->make(InvoicesEndpoint::class)->get($customerInvoice);
 
-        $data = [
-            'voucherDate' => Lexoffice::buildLexofficeDate(now()),
-            'address' => [
-                'contactId' => $customerInvoice->customer->lexoffice_id
-            ],
-            'lineItems' => $customerInvoice->position()->get()->map(function ($position, $index) use ($invoiceData) {
-                return [
-                    'type' => $position->type,
-                    'name' => $position->name,
-                    'quantity' => $invoiceData->lineItems[$index]->quantity,
-                    'unitName' => $position->unit_name,
-                    'unitPrice' => [
-                        'currency' => 'EUR',
-                        'netAmount' => $position->net_amount,
-                        'taxRatePercentage' => $position->tax_rate_percentage
-                    ],
-                    'discountPercentage' => $position->discount_percentage
-                ];
-            })->toArray(),
-            'taxConditions' => $invoiceData->taxConditions,
-            'shippingConditions' => $invoiceData->shippingConditions
-        ];
+        $invoiceData->voucherDate = Lexoffice::buildLexofficeDate(now());
 
-        return $this->postRequest('/dunnings?precedingSalesVoucherId=' . $customerInvoice->lexoffice_id, $data);
+        return $this->postRequest('/dunnings?precedingSalesVoucherId=' . $invoiceData->id, (array)$invoiceData);
     }
 }

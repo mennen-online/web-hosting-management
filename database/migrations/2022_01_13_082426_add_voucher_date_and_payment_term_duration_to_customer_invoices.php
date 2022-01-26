@@ -38,16 +38,17 @@ class AddVoucherDateAndPaymentTermDurationToCustomerInvoices extends Migration
      */
     public function down()
     {
-        Schema::table('customer_invoices', function(Blueprint $table) {
-            foreach([
-                'payment_term_duration',
-                'voucher_date'
-            ] as $column) {
-                if(Schema::hasColumn('customer_invoices', $column)) {
+        foreach([
+                    'payment_term_duration',
+                    'voucher_date'
+                ] as $column) {
+            if(Schema::hasColumn('customer_invoices', $column)) {
+                Schema::table('customer_invoices', function(Blueprint $table) use($column) {
                     $table->dropColumn($column);
-                }
+                });
             }
-        });
+        }
+
         Schema::table('customer_invoices', function (Blueprint $table) {
             $table->renameColumn('total_net_amount', 'totalNetAmount');
         });

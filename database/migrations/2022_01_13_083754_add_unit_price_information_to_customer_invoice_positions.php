@@ -33,26 +33,17 @@ class AddUnitPriceInformationToCustomerInvoicePositions extends Migration
     {
         Schema::table('customer_invoice_positions', function (Blueprint $table) {
             $table->json('unit_price')->nullable()->after('unit_name');
-            CustomerInvoicePosition::all()->each(function($position) {
-                $position->update([
-                    'unit_price' => json_encode([
-                        $position->only([
-                            'tax_rate_percentage',
-                            'net_amount',
-                            'currency'
-                        ])
-                    ])
-                ]);
-            });
-            foreach([
-                'tax_rate_percentage',
-                'net_amount',
-                'currency'
-            ] as $column) {
-                if(Schema::hasColumn('customer_invoice_positions', $column)) {
-                    $table->dropColumn($column);
-                }
-            }
         });
+        foreach([
+                    'tax_rate_percentage',
+                    'net_amount',
+                    'currency'
+                ] as $column) {
+            if(Schema::hasColumn('customer_invoice_positions', $column)) {
+                Schema::table('customer_invoice_positions', function (Blueprint $table) use($column) {
+                    $table->dropColumn($column);
+                });
+            }
+        }
     }
 }

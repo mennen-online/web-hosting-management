@@ -16,6 +16,7 @@ class CustomerInvoice extends Model
      * @var string[]
      */
     protected $fillable = [
+        'type',
         'lexoffice_id',
         'voucher_number',
         'voucher_date',

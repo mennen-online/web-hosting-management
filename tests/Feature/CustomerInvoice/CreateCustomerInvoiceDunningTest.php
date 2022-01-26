@@ -13,13 +13,15 @@ use App\Services\Lexoffice\Endpoints\ContactsEndpoint;
 use App\Services\Lexoffice\Endpoints\DunningEndpoint;
 use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use App\Services\Lexoffice\Lexoffice;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class CreateCustomerInvoiceDunningTest extends TestCase
 {
+    use WithFaker;
+
     protected $user;
 
     protected $contact;
@@ -30,22 +32,30 @@ class CreateCustomerInvoiceDunningTest extends TestCase
 
         Artisan::call('lexoffice:contacts:sync');
 
-        if(!$this->user = User::whereHas('customer')->first()) {
-            $this->user = User::factory()
-                ->has(
-                    Customer::factory()
-                        ->has($this->contact = CustomerContact::factory(), 'contacts')
-                        ->has($address = CustomerAddress::factory(), 'address')
-                )->create();
+        Http::fake([
+            'https://forge.laravel.com/api/v1/servers/' => Http::response([
+                "server" => [
+                    "id"            => $this->faker->randomNumber(),
+                    "type"          => "app",
+                    "provider"      => "hetzner",
+                    "name"          => "q3efXImJDefRcXU0",
+                    "size"          => "1",
+                    "credential_id" => 79436,
+                    "php_version"   => "php74",
+                    "region"        => "2",
+                    "database_type" => "mysql8",
+                ],
+            ])
+        ]);
 
-            $contact = app()->make(ContactsEndpoint::class)->createOrUpdateCompanyBillingAddress(
-                $this->user->customer,
-                $this->user->customer->address->supplement,
-                $this->user->customer->address->street,
-                $this->user->customer->address->zip,
-                $this->user->customer->address->city,
-                $this->user->customer->address->country_code
-            );
+        if (!$this->user = User::whereHas('customer')->first()) {
+            $this->user = User::factory()->has(Customer::factory()->has($this->contact = CustomerContact::factory(),
+                'contacts')->has($address = CustomerAddress::factory(), 'address'))->create();
+
+            $contact = app()->make(ContactsEndpoint::class)->createOrUpdateCompanyBillingAddress($this->user->customer,
+                $this->user->customer->address->supplement, $this->user->customer->address->street,
+                $this->user->customer->address->zip, $this->user->customer->address->city,
+                $this->user->customer->address->country_code);
 
             $this->user->customer->contacts->first()->update(['lexoffice_id' => $contact->id]);
         }
@@ -64,11 +74,40 @@ class CreateCustomerInvoiceDunningTest extends TestCase
             ),
             $customerProduct->customer
         );
+
     }
 
     public function testCreateInvoiceDunning() {
         $result = app()->make(DunningEndpoint::class)->create($this->user->customer->invoices->first());
 
-        dd($result);
+        $invoice = app()->make(InvoicesEndpoint::class)->get($this->user->customer->invoices()->first());
+
+        $this->assertObjectHasAttribute('id', $result);
+
+        $dunning = app()->make(DunningEndpoint::class)->get($result->id);
+
+        $voucherNumber = collect($invoice->relatedVouchers)->filter(function($relatedVoucher) use($dunning) {
+            if($relatedVoucher->id === $dunning->id) {
+                return $relatedVoucher;
+            }
+        })->first()->voucherNumber;
+
+        $dunning->voucherNumber = $voucherNumber;
+
+        $dunning->lineItems = $invoice->lineItems;
+
+        $customerInvoice = $this->user->customer->invoices()->create(
+            Lexoffice::convertLexofficeInvoiceToCustomerInvoice($dunning, 'dunning')
+        );
+
+        $this->assertSame('dunning', $customerInvoice->type);
+
+        $this->assertModelExists($customerInvoice);
+
+        $customerInvoice->position()->createMany(
+            Lexoffice::convertLexofficeInvoiceLineItemToCustomerInvoicePosition($dunning->lineItems)
+        );
+
+        $this->assertSame($customerInvoice->position()->count(), count($dunning->lineItems));
     }
 }

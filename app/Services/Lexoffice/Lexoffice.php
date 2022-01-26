@@ -7,7 +7,6 @@ use App\Models\CustomerInvoice;
 use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use App\Services\Lexoffice\Endpoints\VoucherlistEndpoint;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -75,11 +74,12 @@ class Lexoffice
         DB::commit();
     }
 
-    private static function convertLexofficeInvoiceToCustomerInvoice(object $invoice)
+    public static function convertLexofficeInvoiceToCustomerInvoice(object $invoice, string $type = 'invoice')
     {
         return [
+            'type'                  => $type,
             'lexoffice_id'          => $invoice->id,
-            'voucher_number'        => $invoice->voucherNumber,
+            'voucher_number'        => $invoice?->voucherNumber ?? '',
             'voucher_date'          => $invoice->voucherDate,
             'total_net_amount'      => $invoice->totalPrice->totalNetAmount,
             'total_gross_amount'    => $invoice->totalPrice->totalGrossAmount,
@@ -88,7 +88,7 @@ class Lexoffice
         ];
     }
 
-    private static function convertLexofficeInvoiceLineItemToCustomerInvoicePosition(array $lineItems)
+    public static function convertLexofficeInvoiceLineItemToCustomerInvoicePosition(array $lineItems)
     {
         $positions = [];
 
