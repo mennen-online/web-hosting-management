@@ -79,7 +79,7 @@ class Lexoffice
         return [
             'type'                  => $type,
             'lexoffice_id'          => $invoice->id,
-            'voucher_number'        => $invoice?->voucherNumber ?? '',
+            'voucher_number'        => $invoice->voucherNumber ?? '',
             'voucher_date'          => $invoice->voucherDate,
             'total_net_amount'      => $invoice->totalPrice->totalNetAmount,
             'total_gross_amount'    => $invoice->totalPrice->totalGrossAmount,
