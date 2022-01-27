@@ -52,28 +52,4 @@ abstract class TestCase extends BaseTestCase
             ])
         ]);
     }
-
-    /*protected function tearDown(): void {
-        parent::tearDown();
-
-        $page = 1;
-
-        $pageSize = 500;
-
-        if($this->domainObject->isOte()) {
-            $results = $this->domainObject->index($page, $pageSize);
-            $results->each(function ($domain) {
-                if ($domain['status'] !== 'DELETE REQUESTED') {
-                    $this->domainObject->delete($domain['domain']);
-                    echo "Deleted ".$domain['domain']."\r\n";
-                }
-            });
-        }
-
-        if($this->contactObject->isOte()) {
-            $this->contactObject->index(1, 50000)->each(function ($contact) {
-                $this->contactObject->delete($contact['id']);
-            });
-        }
-    }*/
 }
