@@ -20,8 +20,6 @@ use Tests\TestCase;
 
 class CreateCustomerInvoiceDunningTest extends TestCase
 {
-    use WithFaker;
-
     protected $user;
 
     protected $contact;
@@ -31,22 +29,6 @@ class CreateCustomerInvoiceDunningTest extends TestCase
         parent::setUp();
 
         Artisan::call('lexoffice:contacts:sync');
-
-        Http::fake([
-            'https://forge.laravel.com/api/v1/servers/' => Http::response([
-                "server" => [
-                    "id"            => $this->faker->randomNumber(),
-                    "type"          => "app",
-                    "provider"      => "hetzner",
-                    "name"          => "q3efXImJDefRcXU0",
-                    "size"          => "1",
-                    "credential_id" => 79436,
-                    "php_version"   => "php74",
-                    "region"        => "2",
-                    "database_type" => "mysql8",
-                ],
-            ])
-        ]);
 
         if (!$this->user = User::whereHas('customer')->first()) {
             $this->user = User::factory()->has(Customer::factory()->has(
