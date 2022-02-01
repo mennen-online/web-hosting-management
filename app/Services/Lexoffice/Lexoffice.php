@@ -153,7 +153,8 @@ class Lexoffice
         return Str::replace('+', '.' . $milliseconds . '+', $date);
     }
 
-    public static function addDunningPositionToCustomerInvoice(object $lexofficeInvoiceData) {
+    public static function addDunningPositionToCustomerInvoice(object $lexofficeInvoiceData)
+    {
         $lineItems = $lexofficeInvoiceData->lineItems;
 
         $lineItem = new stdClass();
@@ -172,7 +173,7 @@ class Lexoffice
 
         $totalNet = 0.00;
 
-        foreach($lineItems as $lineItem) {
+        foreach ($lineItems as $lineItem) {
             $totalNet += $lineItem->unitPrice->netAmount;
         }
 
