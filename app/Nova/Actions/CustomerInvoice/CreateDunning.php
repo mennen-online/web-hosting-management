@@ -4,6 +4,7 @@ namespace App\Nova\Actions\CustomerInvoice;
 
 use App\Models\CustomerInvoice;
 use App\Services\Lexoffice\Endpoints\DunningEndpoint;
+use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use App\Services\Lexoffice\Lexoffice;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -27,12 +28,24 @@ class CreateDunning extends Action
     {
         $dunningEndpoint = app()->make(DunningEndpoint::class);
 
-        $models->each(function (CustomerInvoice $customerInvoice) use ($dunningEndpoint) {
-            $dunningInfo = $dunningEndpoint->create($customerInvoice);
+        $invoiceEndpoint = app()->make(InvoicesEndpoint::class);
 
-            $dunning = $dunningEndpoint->get(new CustomerInvoice(['lexoffice_id' => $dunningInfo->id]));
+        $models->each(function (CustomerInvoice $customerInvoice) use ($dunningEndpoint, $invoiceEndpoint) {
+            $invoice = $invoiceEndpoint->get($customerInvoice);
 
-            Lexoffice::storeCustomerInvoice($dunning, $customerInvoice->customer, false);
+            $dunning = Lexoffice::addDunningPositionToCustomerInvoice($invoice);
+
+            $customerDunning = $customerInvoice->customer->invoices()->create(
+                Lexoffice::convertLexofficeInvoiceToCustomerInvoice($dunning)
+            );
+
+            $customerDunning->position()->createMany(
+                Lexoffice::convertLexofficeInvoiceLineItemToCustomerInvoicePosition($dunning->lineItems)
+            );
+
+            $dunningInfo = $dunningEndpoint->create($customerDunning);
+
+            $customerDunning->update(['lexoffice_id' => $dunningInfo->id]);
         });
     }
 
