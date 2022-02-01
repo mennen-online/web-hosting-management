@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use stdClass;
 
 class Lexoffice
 {
@@ -150,5 +151,43 @@ class Lexoffice
         $milliseconds = Str::substr($carbon->format('v'), 0, 3);
 
         return Str::replace('+', '.' . $milliseconds . '+', $date);
+    }
+
+    public static function addDunningPositionToCustomerInvoice(object $lexofficeInvoiceData) {
+        $lineItems = $lexofficeInvoiceData->lineItems;
+
+        $lineItem = new stdClass();
+        $lineItem->type = 'custom';
+        $lineItem->name = 'Mahngebühren';
+        $lineItem->quantity = 1;
+        $lineItem->unitName = 'Stück';
+        $lineItem->unitPrice = new stdClass();
+        $lineItem->unitPrice->currency = 'EUR';
+        $lineItem->unitPrice->netAmount = 3;
+        $lineItem->unitPrice->taxRatePercentage = 19.0;
+        $lineItem->discountPercentage = 0;
+        $lineItem->lineItemAmount = 3.0;
+
+        $lineItems[] = $lineItem;
+
+        $totalNet = 0.00;
+
+        foreach($lineItems as $lineItem) {
+            $totalNet += $lineItem->unitPrice->netAmount;
+        }
+
+        $lexofficeInvoiceData->lineItems = $lineItems;
+
+        $lexofficeInvoiceData->totalPrice->totalNetAmount = $totalNet;
+
+        $lexofficeInvoiceData->totalPrice->totalGrossAmount = $totalNet * 1.19;
+
+        $lexofficeInvoiceData->totalPrice->totalTaxAmount = $totalNet * 0.19;
+
+        $lexofficeInvoiceData->taxAmounts[0]->netAmount = $totalNet;
+
+        $lexofficeInvoiceData->taxAmounts[0]->taxAmount = $totalNet * 0.19;
+
+        return $lexofficeInvoiceData;
     }
 }

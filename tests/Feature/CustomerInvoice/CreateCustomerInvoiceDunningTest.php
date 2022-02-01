@@ -66,36 +66,26 @@ class CreateCustomerInvoiceDunningTest extends TestCase
 
     public function testCreateInvoiceDunning()
     {
-        $result = app()->make(DunningEndpoint::class)->create($this->user->customer->invoices->first());
+        $customerInvoice = $this->user->customer->invoices->first();
 
-        $invoice = app()->make(InvoicesEndpoint::class)->get($this->user->customer->invoices()->first());
+        $dunning = Lexoffice::addDunningPositionToCustomerInvoice(
+            app()->make(InvoicesEndpoint::class)->get($customerInvoice)
+        );
 
-        $this->assertObjectHasAttribute('id', $result);
-
-        $dunning = app()->make(DunningEndpoint::class)->get($result->id);
-
-        $voucherNumber = collect($invoice->relatedVouchers)->filter(function ($relatedVoucher) use ($dunning) {
-            if ($relatedVoucher->id === $dunning->id) {
-                return $relatedVoucher;
-            }
-        })->first()->voucherNumber;
-
-        $dunning->voucherNumber = $voucherNumber;
-
-        $dunning->lineItems = $invoice->lineItems;
-
-        $customerInvoice = $this->user->customer->invoices()->create(
+        $dunningInvoice = $this->user->customer->invoices()->create(
             Lexoffice::convertLexofficeInvoiceToCustomerInvoice($dunning, 'dunning')
         );
 
-        $this->assertSame('dunning', $customerInvoice->type);
-
-        $this->assertModelExists($customerInvoice);
-
-        $customerInvoice->position()->createMany(
+        $dunningInvoice->position()->createMany(
             Lexoffice::convertLexofficeInvoiceLineItemToCustomerInvoicePosition($dunning->lineItems)
         );
 
-        $this->assertSame($customerInvoice->position()->count(), count($dunning->lineItems));
+        $result = app()->make(DunningEndpoint::class)->create($dunningInvoice);
+
+        $this->assertObjectHasAttribute('id', $result);
+
+        $dunningInvoice->update(['lexoffice_id' => $result->id]);
+
+        $this->assertSame($result->id, $dunningInvoice->lexoffice_id);
     }
 }
