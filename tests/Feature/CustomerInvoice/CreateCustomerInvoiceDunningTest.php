@@ -9,6 +9,7 @@ use App\Models\CustomerInvoice;
 use App\Models\CustomerProduct;
 use App\Models\Product;
 use App\Models\User;
+use App\Nova\Actions\CustomerInvoice\CreateDunning;
 use App\Services\Lexoffice\Endpoints\ContactsEndpoint;
 use App\Services\Lexoffice\Endpoints\DunningEndpoint;
 use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
@@ -16,6 +17,7 @@ use App\Services\Lexoffice\Lexoffice;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
+use Laravel\Nova\Fields\ActionFields;
 use Tests\TestCase;
 
 class CreateCustomerInvoiceDunningTest extends TestCase
@@ -87,5 +89,11 @@ class CreateCustomerInvoiceDunningTest extends TestCase
         $dunningInvoice->update(['lexoffice_id' => $result->id]);
 
         $this->assertSame($result->id, $dunningInvoice->lexoffice_id);
+    }
+
+    public function testCreateInvoiceDunningNovaAction() {
+        $action = new CreateDunning();
+
+        $action->handle(new ActionFields(collect(), collect()), $this->user->customer->invoices()->get());
     }
 }
