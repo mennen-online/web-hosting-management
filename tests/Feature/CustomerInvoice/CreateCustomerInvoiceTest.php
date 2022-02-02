@@ -29,9 +29,7 @@ class CreateCustomerInvoiceTest extends TestCase
 
         $customer = Customer::factory()->make();
 
-        $uuid = $this->faker->uuid;
-
-        $this->createHttpFakeResponseForLexofficeContact($uuid, $customer);
+        $this->createHttpFakeResponseForLexofficeContact($customer->lexoffice_id, $customer);
 
         if (!$this->user = User::whereHas('customer')->first()) {
             $this->user = User::factory()
@@ -40,15 +38,6 @@ class CreateCustomerInvoiceTest extends TestCase
                         ->has($this->contact = CustomerContact::factory(), 'contacts')
                         ->has($address = CustomerAddress::factory(), 'address')
                 )->create();
-
-            app()->make(ContactsEndpoint::class)->createOrUpdateCompanyBillingAddress(
-                $this->user->customer,
-                $this->user->customer->address->supplement,
-                $this->user->customer->address->street,
-                $this->user->customer->address->zip,
-                $this->user->customer->address->city,
-                $this->user->customer->address->country_code
-            );
         }
     }
 

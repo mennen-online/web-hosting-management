@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property User $user
+ * @property string $lexoffice_id
  * @property-read string $customer_type
  * @property-read boolean $allowTaxFreeInvoices
  * @property-read string $companyName

@@ -75,17 +75,17 @@ abstract class TestCase extends BaseTestCase
             'https://api.lexoffice.io/v1/contacts/' . $uuid => Http::response(array_merge(
                 ContactsEndpoint::generatePersonContactDataArray($customer),
                 [
-                        'addresses' => [
-                            'billing' => [
-                                ContactsEndpoint::generateCustomerAddressDataArray(
-                                    streetAndNumber: $this->faker->address,
-                                    postcode: $this->faker->postcode,
-                                    city: $this->faker->city,
-                                    countryCode: $this->faker->countryCode,
-                                    supplement: $this->faker->address
-                                )
-                            ]
+                    'addresses' => [
+                        'billing' => [
+                            ContactsEndpoint::generateCustomerAddressDataArray(
+                                streetAndNumber: $this->faker->address,
+                                postcode: $this->faker->postcode,
+                                city: $this->faker->city,
+                                countryCode: $this->faker->countryCode,
+                                supplement: $this->faker->address
+                            )
                         ]
+                    ]
                 ]
             ))
         ]);

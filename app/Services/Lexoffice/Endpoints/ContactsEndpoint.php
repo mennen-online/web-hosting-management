@@ -165,7 +165,7 @@ class ContactsEndpoint extends Connector
         string $postcode,
         string $city,
         string $countryCode
-    ) {
+    ): object {
         $originalData = $this->get($customer->lexoffice_id);
 
         if (!property_exists($originalData, 'addresses')) {

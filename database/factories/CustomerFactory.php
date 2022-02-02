@@ -28,6 +28,7 @@ class CustomerFactory extends Factory
     {
         return [
             'customer_type' => 'person',
+            'lexoffice_id' => $this->faker->uuid,
             'salutation' => '',
             'first_name' => $this->faker->firstName,
             'last_name' => $this->faker->lastName,

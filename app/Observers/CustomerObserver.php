@@ -17,30 +17,33 @@ class CustomerObserver
      */
     public function creating(Customer $customer)
     {
-        if ($customer->customer_type) {
-            $contactsEndpoint = app()->make(ContactsEndpoint::class);
+        if(!app()->runningUnitTests()) {
+            if ($customer->customer_type) {
+                $contactsEndpoint = app()->make(ContactsEndpoint::class);
 
-            $customer->lexoffice_id = match ($customer->customer_type) {
-                'company' => $contactsEndpoint->createCompanyContact($customer)->id,
-                default => $contactsEndpoint->createPersonContact($customer)->id,
-            };
-        }
-
-        if ($customer->customer_type === 'company') {
-            $customer->company = [
-                'allowTaxFreeInvoices' => $customer->allowTaxFreeInvoices,
-                'name' => $customer->companyName,
-                'taxNumber' => $customer->taxNumber,
-                'vatRegistrationId' => $customer->vatRegistrationId
-            ];
-        }
-
-        $fillableFields = $customer->getFillable();
-        foreach ($customer->getAttributes() as $attribute => $value) {
-            if (!in_array($attribute, $fillableFields)) {
-                $customer->removeAttribute($attribute);
+                $customer->lexoffice_id = match ($customer->customer_type) {
+                    'company' => $contactsEndpoint->createCompanyContact($customer)->id,
+                    default   => $contactsEndpoint->createPersonContact($customer)->id,
+                };
             }
+
+            if ($customer->customer_type === 'company') {
+                $customer->company = [
+                    'allowTaxFreeInvoices' => $customer->allowTaxFreeInvoices,
+                    'name'                 => $customer->companyName,
+                    'taxNumber'            => $customer->taxNumber,
+                    'vatRegistrationId'    => $customer->vatRegistrationId
+                ];
+            }
+
         }
+
+            $fillableFields = $customer->getFillable();
+            foreach ($customer->getAttributes() as $attribute => $value) {
+                if (!in_array($attribute, $fillableFields)) {
+                    $customer->removeAttribute($attribute);
+                }
+            }
     }
 
     /**

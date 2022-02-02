@@ -16,7 +16,7 @@ class CustomerContactObserver
      */
     public function created(CustomerContact $customerContact)
     {
-        if (!app()->runningInConsole()) {
+        if (!app()->runningInConsole() && !app()->runningUnitTests()) {
             app()->make(ContactObject::class)->create($customerContact);
 
             if ($customerContact->customer->contacts()->count() === 1) {
