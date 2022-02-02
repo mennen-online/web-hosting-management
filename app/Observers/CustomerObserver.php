@@ -7,11 +7,19 @@ use App\Services\Lexoffice\Endpoints\ContactsEndpoint;
 
 class CustomerObserver
 {
-    public function creating(Customer $customer) {
+    /**
+     * Handle the Customer "creating" event.
+     *
+     * @param Customer $customer
+     * @return void
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    public function creating(Customer $customer)
+    {
         if ($customer->customer_type) {
             $customer->lexoffice_id = match ($customer->customer_type) {
                 'company' => app()->make(ContactsEndpoint::class)->createCompanyContact($customer)->id,
-                'person' => app()->make(ContactsEndpoint::class)->createPersonContact($customer)->id,
+                default => app()->make(ContactsEndpoint::class)->createPersonContact($customer)->id,
             };
         }
 
@@ -25,7 +33,7 @@ class CustomerObserver
         }
 
         $fillableFields = $customer->getFillable();
-        foreach ($customer->attributes as $attribute => $value) {
+        foreach ($customer->getAttributes() as $attribute => $value) {
             if (!in_array($attribute, $fillableFields)) {
                 unset($customer->attributes[$attribute]);
             }
@@ -42,8 +50,15 @@ class CustomerObserver
     {
     }
 
-
-    public function updating(Customer $customer) {
+    /**
+     * Handle the Customer "updating" event.
+     *
+     * @param Customer $customer
+     * @return void
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    public function updating(Customer $customer)
+    {
         if (!empty($customer->street_number)
             && !empty($customer->postcode)
             && !empty($customer->city)

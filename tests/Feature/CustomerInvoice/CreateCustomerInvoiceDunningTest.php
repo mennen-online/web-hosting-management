@@ -91,7 +91,8 @@ class CreateCustomerInvoiceDunningTest extends TestCase
         $this->assertSame($result->id, $dunningInvoice->lexoffice_id);
     }
 
-    public function testCreateInvoiceDunningNovaAction() {
+    public function testCreateInvoiceDunningNovaAction()
+    {
         $action = new CreateDunning();
 
         $action->handle(new ActionFields(collect(), collect()), $this->user->customer->invoices()->get());

@@ -9,6 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property User $user
+ * @property-read string $customer_type
+ * @property-read boolean $allowTaxFreeInvoices
+ * @property-read string $companyName
+ * @property-read string $taxNumber
+ * @property-read string $vatRegistrationId
+ * @property array $attributes
+ * @property-read string $supplement
  */
 class Customer extends Model
 {
