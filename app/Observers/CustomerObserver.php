@@ -17,7 +17,7 @@ class CustomerObserver
      */
     public function creating(Customer $customer)
     {
-        if(!app()->runningUnitTests()) {
+        if (!app()->runningUnitTests()) {
             if ($customer->customer_type) {
                 $contactsEndpoint = app()->make(ContactsEndpoint::class);
 
@@ -35,15 +35,14 @@ class CustomerObserver
                     'vatRegistrationId'    => $customer->vatRegistrationId
                 ];
             }
-
         }
 
             $fillableFields = $customer->getFillable();
-            foreach ($customer->getAttributes() as $attribute => $value) {
-                if (!in_array($attribute, $fillableFields)) {
-                    $customer->removeAttribute($attribute);
-                }
+        foreach ($customer->getAttributes() as $attribute => $value) {
+            if (!in_array($attribute, $fillableFields)) {
+                $customer->removeAttribute($attribute);
             }
+        }
     }
 
     /**
