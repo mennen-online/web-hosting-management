@@ -6,43 +6,110 @@ use App\Models\Customer;
 use App\Models\CustomerAddress;
 use App\Models\CustomerContact;
 use App\Models\User;
+use App\Services\Lexoffice\Endpoints\ContactsEndpoint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class CreateCustomerTest extends TestCase
 {
+    use WithFaker;
+
     public function testCreatePersonCustomer()
     {
-        $user = User::factory()
-            ->has(
-                $customer = Customer::factory()
-                ->has($customerAddress = CustomerAddress::factory(), 'address')
-                ->has($customerContact = CustomerContact::factory(), 'contacts')
-            )->create();
+        $customer = Customer::factory()
+            ->for(User::factory(), 'user')
+            ->has($customerAddress = CustomerAddress::factory(), 'address')
+            ->make();
 
-        $this->assertModelExists($user);
+        $customerContact = CustomerContact::factory()
+            ->for($customer)->make();
 
-        $this->assertModelExists($user->customer);
+        $uuid = $this->faker->uuid;
 
-        $this->assertModelExists($user->customer->address);
+        Http::fake([
+            'https://api.lexoffice.io/v1/contacts' => Http::response(
+                array_merge(
+                    [
+                        'id' => $uuid,
+                        'resourceUri' => 'https://api.lexoffice.io/v1/contacts/' . $uuid
+                    ]
+                )
+            ),
+            'https://api.lexoffice.io/v1/contacts/'.$uuid => Http::response(
+                array_merge(
+                    ContactsEndpoint::generatePersonContactDataArray($customer),
+                    [
+                    'addresses' => [
+                        'billing' => [
+                            ContactsEndpoint::generateCustomerAddressDataArray(
+                                streetAndNumber: $this->faker->address,
+                                postcode: $this->faker->postcode,
+                                city: $this->faker->city,
+                                countryCode: $this->faker->countryCode,
+                                supplement: $this->faker->address
+                            )
+                        ]
+                    ]
+                    ]
+                )
+            )
+        ]);
 
-        $this->assertModelExists($user->customer->contacts->first());
+        $customer->save();
+
+        $this->assertModelExists($customer);
+
+        $this->assertModelExists($customer->user);
     }
 
     public function testCreateCompanyCustomer()
     {
-        $user = User::factory()
-            ->has($customer = Customer::factory()->company()
-                ->has($customerAddress = CustomerAddress::factory(), 'address')
-                ->has($customerContact = CustomerContact::factory(), 'contacts'))->create();
+        $customer = Customer::factory()
+            ->company()
+            ->for(User::factory(), 'user')
+            ->has($customerAddress = CustomerAddress::factory(), 'address')
+            ->make();
 
-        $this->assertModelExists($user);
+        $customerContact = CustomerContact::factory()
+            ->for($customer)->make();
 
-        $this->assertModelExists($user->customer);
+        $uuid = $this->faker->uuid;
 
-        $this->assertModelExists($user->customer->address);
+        Http::fake([
+            'https://api.lexoffice.io/v1/contacts' => Http::response(
+                array_merge(
+                    [
+                        'id' => $uuid,
+                        'resourceUri' => 'https://api.lexoffice.io/v1/contacts/' . $uuid
+                    ]
+                )
+            ),
+            'https://api.lexoffice.io/v1/contacts/'.$uuid => Http::response(
+                array_merge(
+                    ContactsEndpoint::generatePersonContactDataArray($customer),
+                    [
+                    'addresses' => [
+                        'billing' => [
+                            ContactsEndpoint::generateCustomerAddressDataArray(
+                                streetAndNumber: $this->faker->address,
+                                postcode: $this->faker->postcode,
+                                city: $this->faker->city,
+                                countryCode: $this->faker->countryCode,
+                                supplement: $this->faker->address
+                            )
+                        ]
+                    ]
+                    ]
+                )
+            )
+        ]);
 
-        $this->assertModelExists($user->customer->contacts->first());
+        $customer->save();
+
+        $this->assertModelExists($customer);
+
+        $this->assertModelExists($customer->user);
     }
 }

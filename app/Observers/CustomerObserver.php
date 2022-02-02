@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Customer;
 use App\Services\Lexoffice\Endpoints\ContactsEndpoint;
+use Illuminate\Support\Facades\Http;
 
 class CustomerObserver
 {
@@ -17,9 +18,11 @@ class CustomerObserver
     public function creating(Customer $customer)
     {
         if ($customer->customer_type) {
+            $contactsEndpoint = app()->make(ContactsEndpoint::class);
+
             $customer->lexoffice_id = match ($customer->customer_type) {
-                'company' => app()->make(ContactsEndpoint::class)->createCompanyContact($customer)->id,
-                default => app()->make(ContactsEndpoint::class)->createPersonContact($customer)->id,
+                'company' => $contactsEndpoint->createCompanyContact($customer)->id,
+                default => $contactsEndpoint->createPersonContact($customer)->id,
             };
         }
 
@@ -35,7 +38,7 @@ class CustomerObserver
         $fillableFields = $customer->getFillable();
         foreach ($customer->getAttributes() as $attribute => $value) {
             if (!in_array($attribute, $fillableFields)) {
-                unset($customer->attributes[$attribute]);
+                $customer->removeAttribute($attribute);
             }
         }
     }

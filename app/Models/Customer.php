@@ -52,6 +52,11 @@ class Customer extends Model
         'company' => 'json'
     ];
 
+    public function removeAttribute($key)
+    {
+        unset($this->attributes[$key]);
+    }
+
     /**
      * @return BelongsTo
      */
