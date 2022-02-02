@@ -72,7 +72,7 @@ class Connector
             $endpoint = '/' . $endpoint;
         }
 
-        if (!$this instanceof FilesEndpoint) {
+        if ($this->page !== 0) {
             $query['page'] = $this->page;
 
             $query['size'] = $this->pageSize;

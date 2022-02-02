@@ -9,6 +9,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property User $user
+ * @property string $lexoffice_id
+ * @property-read string $customer_type
+ * @property-read boolean $allowTaxFreeInvoices
+ * @property-read string $companyName
+ * @property-read string $taxNumber
+ * @property-read string $vatRegistrationId
+ * @property array $attributes
+ * @property-read string $supplement
+ * @property-read string $note
  */
 class Customer extends Model
 {
@@ -45,87 +54,9 @@ class Customer extends Model
         'company' => 'json'
     ];
 
-    /**
-     * @return void
-     */
-    protected static function boot()
+    public function removeAttribute($key)
     {
-        parent::boot();
-
-        self::creating(
-            function (Customer $customer) {
-                /**
-                 * @phpstan-ignore-next-line
-                 */
-                if ($customer->customer_type) {
-                    /**
-                     * @phpstan-ignore-next-line
-                     */
-                    $customer->lexoffice_id = match ($customer->customer_type) {
-                        'company' => app()->make(ContactsEndpoint::class)->createCompanyContact($customer)->id,
-                        'person' => app()->make(ContactsEndpoint::class)->createPersonContact($customer)->id,
-                    };
-                }
-
-                if ($customer->customer_type === 'company') {
-                    $customer->company = [
-                        /**
-                         * @phpstan-ignore-next-line
-                         */
-                        'allowTaxFreeInvoices' => $customer->allowTaxFreeInvoices,
-                        /**
-                         * @phpstan-ignore-next-line
-                         */
-                        'name' => $customer->companyName,
-                        /**
-                         * @phpstan-ignore-next-line
-                         */
-                        'taxNumber' => $customer->taxNumber,
-                        /**
-                         * @phpstan-ignore-next-line
-                         */
-                        'vatRegistrationId' => $customer->vatRegistrationId
-                    ];
-                }
-
-                if (isset($customer->customer_type)) {
-                    $fillableFields = $customer->getFillable();
-                    foreach ($customer->attributes as $attribute => $value) {
-                        if (!in_array($attribute, $fillableFields)) {
-                            unset($customer->attributes[$attribute]);
-                        }
-                    }
-                }
-            }
-        );
-
-        self::updating(
-            function (Customer $customer) {
-                if (!empty($customer->street_number)
-                    && !empty($customer->postcode)
-                    && !empty($customer->city)
-                    && !empty($customer->countryCode)) {
-                    app()->make(ContactsEndpoint::class)->createOrUpdateCompanyBillingAddress(
-                        $customer,
-                        /**
-                        * @phpstan-ignore-next-line
-                        */
-                        $customer->supplement ?? '',
-                        $customer->street_number,
-                        $customer->postcode,
-                        $customer->city,
-                        $customer->countryCode
-                    );
-                }
-
-                $fillableFields = $customer->getFillable();
-                foreach ($customer->attributes as $attribute => $value) {
-                    if (!in_array($attribute, $fillableFields)) {
-                        unset($customer->attributes[$attribute]);
-                    }
-                }
-            }
-        );
+        unset($this->attributes[$key]);
     }
 
     /**

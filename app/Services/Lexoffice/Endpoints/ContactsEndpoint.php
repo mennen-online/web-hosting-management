@@ -92,39 +92,35 @@ class ContactsEndpoint extends Connector
 
     public function createCompanyContact(Customer $customer)
     {
+        return $this->postRequest('/contacts', self::generateCompanyContactDataArray($customer));
+    }
+
+    public static function generateCompanyContactDataArray(Customer $customer): array
+    {
         $role = new stdClass();
         $role->customer = new stdClass();
-        $data = [
+        return [
             'version' => 0,
             'roles' => $role,
             'company' => [
-                /**
-                 * @phpstan-ignore-next-line
-                 */
                 'name' => $customer->companyName,
-                /**
-                 * @phpstan-ignore-next-line
-                 */
                 'allowTaxFreeInvoices' => $customer->allowTaxFreeInvoices ?? false,
-                /**
-                 * @phpstan-ignore-next-line
-                 */
                 'taxNumber' => $customer->taxNumber,
-                /**
-                 * @phpstan-ignore-next-line
-                 */
                 'vatRegistrationId' => Str::upper($customer->vatRegistrationId)
             ]
         ];
-
-        return $this->postRequest('/contacts', $data);
     }
 
     public function createPersonContact(Customer $customer)
     {
+        return $this->postRequest('/contacts', self::generatePersonContactDataArray($customer));
+    }
+
+    public static function generatePersonContactDataArray(Customer $customer) : array
+    {
         $role = new stdClass();
         $role->customer = new stdClass();
-        $data = [
+        return [
             'version' => 0,
             'roles' => $role,
             'person' => [
@@ -132,13 +128,8 @@ class ContactsEndpoint extends Connector
                 'firstName' => $customer->first_name,
                 'lastName' => $customer->last_name,
             ],
-            /**
-             * @phpstan-ignore-next-line
-             */
             'note' => $customer->note
         ];
-
-        return $this->postRequest('/contacts', $data);
     }
 
     public function createOrUpdateCompanyContactPerson(Customer $customer, CustomerContact $customerContact)
@@ -150,16 +141,21 @@ class ContactsEndpoint extends Connector
         }
 
         $originalData->company->contactPersons = [
-            [
-                'salutation' => $customerContact->salutation,
-                'firstName' => $customerContact->first_name,
-                'lastName' => $customerContact->last_name,
-                'primary' => true,
-                'emailAddress' => $customerContact->email,
-                'phoneNumber' => $customerContact->phone
-            ]
+            self::generateContactPersonDataArray($customerContact)
         ];
         return $this->putRequest('/contacts', $customer->lexoffice_id, $originalData);
+    }
+
+    public static function generateContactPersonDataArray(CustomerContact $customerContact) : array
+    {
+        return [
+            'salutation' => $customerContact->salutation,
+            'firstName' => $customerContact->first_name,
+            'lastName' => $customerContact->last_name,
+            'primary' => true,
+            'emailAddress' => $customerContact->email,
+            'phoneNumber' => $customerContact->phone
+        ];
     }
 
     public function createOrUpdateCompanyBillingAddress(
@@ -169,7 +165,7 @@ class ContactsEndpoint extends Connector
         string $postcode,
         string $city,
         string $countryCode
-    ) {
+    ): object {
         $originalData = $this->get($customer->lexoffice_id);
 
         if (!property_exists($originalData, 'addresses')) {
@@ -180,14 +176,30 @@ class ContactsEndpoint extends Connector
             $originalData->addresses->billing = [];
         }
 
-        $originalData->addresses->billing[0] = [
-            'supplement' => $supplement,
+        $originalData->addresses->billing[0] = self::generateCustomerAddressDataArray(
+            $streetAndNumber,
+            $postcode,
+            $city,
+            $countryCode,
+            $supplement
+        );
+
+        return $this->putRequest('/contacts', $customer->lexoffice_id, (array)$originalData);
+    }
+
+    public static function generateCustomerAddressDataArray(
+        string $streetAndNumber,
+        string $postcode,
+        string $city,
+        string $countryCode,
+        ?string $supplement = null
+    ) : array {
+        return [
+            'supplement' => $supplement ?? '',
             'street' => $streetAndNumber,
             'zip' => $postcode,
             'city' => $city,
             'countryCode' => $countryCode
         ];
-
-        return $this->putRequest('/contacts', $customer->lexoffice_id, (array)$originalData);
     }
 }

@@ -18,6 +18,8 @@ class AddUnitPriceInformationToCustomerInvoicePositions extends Migration
             $table->integer('tax_rate_percentage')->default(19)->after('unit_price');
             $table->double('net_amount')->default(0.00)->after('unit_price');
             $table->string('currency')->default('EUR')->after('unit_price');
+        });
+        Schema::table('customer_invoice_positions', function (Blueprint $table) {
             $table->dropColumn('unit_price');
         });
     }
@@ -31,26 +33,17 @@ class AddUnitPriceInformationToCustomerInvoicePositions extends Migration
     {
         Schema::table('customer_invoice_positions', function (Blueprint $table) {
             $table->json('unit_price')->nullable()->after('unit_name');
-            CustomerInvoicePosition::all()->each(function($position) {
-                $position->update([
-                    'unit_price' => json_encode([
-                        $position->only([
-                            'tax_rate_percentage',
-                            'net_amount',
-                            'currency'
-                        ])
-                    ])
-                ]);
-            });
-            foreach([
-                'tax_rate_percentage',
-                'net_amount',
-                'currency'
-            ] as $column) {
-                if(Schema::hasColumn('customer_invoice_positions', $column)) {
-                    $table->dropColumn($column);
-                }
-            }
         });
+        foreach([
+                    'tax_rate_percentage',
+                    'net_amount',
+                    'currency'
+                ] as $column) {
+            if(Schema::hasColumn('customer_invoice_positions', $column)) {
+                Schema::table('customer_invoice_positions', function (Blueprint $table) use($column) {
+                    $table->dropColumn($column);
+                });
+            }
+        }
     }
 }

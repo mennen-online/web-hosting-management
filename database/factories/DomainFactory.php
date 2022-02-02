@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Domain;
+use App\Models\DomainProduct;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -23,6 +24,7 @@ class DomainFactory extends Factory
     public function definition()
     {
         return [
+            'domain_product_id' => DomainProduct::factory()->create(),
             'name' => Str::random().'.de'
         ];
     }

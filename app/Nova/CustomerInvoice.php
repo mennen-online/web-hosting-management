@@ -2,6 +2,7 @@
 
 namespace App\Nova;
 
+use App\Nova\Actions\CustomerInvoice\CreateDunning;
 use App\Nova\Actions\Invoices\DownloadInvoice;
 use App\Nova\Actions\Invoices\OpenInLexoffice;
 use App\Nova\Filters\CustomerInvoice\Overdue;
@@ -14,6 +15,7 @@ use Laravel\Nova\Fields\HasMany;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Text;
+use Laravel\Nova\Http\Requests\ActionRequest;
 
 /**
  * @property \App\Models\CustomerInvoice $resource
@@ -134,7 +136,16 @@ class CustomerInvoice extends Resource
     {
         return [
             new OpenInLexoffice(),
-            new DownloadInvoice()
+            new DownloadInvoice(),
+            (new CreateDunning())->canSee(function ($request) {
+                if ($request instanceof ActionRequest) {
+                    return true;
+                }
+
+                return $this->resource instanceof \App\Models\CustomerInvoice
+                    && Carbon::parse($this->resource->voucher_date)
+                        ->addDays($this->resource->payment_term_duration)->isBefore(now());
+            })
         ];
     }
 }
