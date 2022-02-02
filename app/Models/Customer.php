@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read string $vatRegistrationId
  * @property array $attributes
  * @property-read string $supplement
+ * @property-read string $note
  */
 class Customer extends Model
 {

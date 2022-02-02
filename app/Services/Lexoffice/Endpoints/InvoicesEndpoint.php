@@ -62,7 +62,7 @@ class InvoicesEndpoint extends Connector
         return $this->postRequest('/invoices?finalize=true', $data);
     }
 
-    private function buildAddress(CustomerProduct $customerProduct)
+    public function buildAddress(CustomerProduct $customerProduct)
     {
         if ($customerProduct->customer->lexoffice_id !== null) {
             return [
@@ -75,7 +75,7 @@ class InvoicesEndpoint extends Connector
         );
     }
 
-    private function buildLineItems(CustomerProduct $customerProduct)
+    public function buildLineItems(CustomerProduct $customerProduct)
     {
         $product = $customerProduct->product;
 
@@ -111,21 +111,21 @@ class InvoicesEndpoint extends Connector
         ];
     }
 
-    private function buildTotalPrice()
+    public function buildTotalPrice()
     {
         return [
             'currency' => 'EUR'
         ];
     }
 
-    private function buildTaxConditions()
+    public function buildTaxConditions()
     {
         return [
             'taxType' => 'net'
         ];
     }
 
-    private function buildShippingConditions()
+    public function buildShippingConditions()
     {
         return [
             'shippingType'    => 'serviceperiod',

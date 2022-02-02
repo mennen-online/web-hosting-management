@@ -77,34 +77,7 @@ class CreateCustomerTest extends TestCase
 
         $uuid = $this->faker->uuid;
 
-        Http::fake([
-            'https://api.lexoffice.io/v1/contacts' => Http::response(
-                array_merge(
-                    [
-                        'id' => $uuid,
-                        'resourceUri' => 'https://api.lexoffice.io/v1/contacts/' . $uuid
-                    ]
-                )
-            ),
-            'https://api.lexoffice.io/v1/contacts/'.$uuid => Http::response(
-                array_merge(
-                    ContactsEndpoint::generatePersonContactDataArray($customer),
-                    [
-                    'addresses' => [
-                        'billing' => [
-                            ContactsEndpoint::generateCustomerAddressDataArray(
-                                streetAndNumber: $this->faker->address,
-                                postcode: $this->faker->postcode,
-                                city: $this->faker->city,
-                                countryCode: $this->faker->countryCode,
-                                supplement: $this->faker->address
-                            )
-                        ]
-                    ]
-                    ]
-                )
-            )
-        ]);
+        $this->createHttpFakeResponseForLexofficeContact($uuid, $customer);
 
         $customer->save();
 

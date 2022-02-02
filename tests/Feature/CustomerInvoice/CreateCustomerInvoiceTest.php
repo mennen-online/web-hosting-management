@@ -10,9 +10,11 @@ use App\Models\Product;
 use App\Models\User;
 use App\Services\Lexoffice\Endpoints\ContactsEndpoint;
 use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
+use App\Services\Lexoffice\Lexoffice;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class CreateCustomerInvoiceTest extends TestCase
@@ -25,7 +27,11 @@ class CreateCustomerInvoiceTest extends TestCase
     {
         parent::setUp();
 
-        Artisan::call('lexoffice:contacts:sync');
+        $customer = Customer::factory()->make();
+
+        $uuid = $this->faker->uuid;
+
+        $this->createHttpFakeResponseForLexofficeContact($uuid, $customer);
 
         if (!$this->user = User::whereHas('customer')->first()) {
             $this->user = User::factory()
@@ -35,7 +41,7 @@ class CreateCustomerInvoiceTest extends TestCase
                         ->has($address = CustomerAddress::factory(), 'address')
                 )->create();
 
-            $contact = app()->make(ContactsEndpoint::class)->createOrUpdateCompanyBillingAddress(
+            app()->make(ContactsEndpoint::class)->createOrUpdateCompanyBillingAddress(
                 $this->user->customer,
                 $this->user->customer->address->supplement,
                 $this->user->customer->address->street,
@@ -43,13 +49,13 @@ class CreateCustomerInvoiceTest extends TestCase
                 $this->user->customer->address->city,
                 $this->user->customer->address->country_code
             );
-
-            $this->user->customer->contacts->first()->update(['lexoffice_id' => $contact->id]);
         }
     }
 
     public function testCreateInvoice()
     {
+        $invoicesEndpoint = app()->make(InvoicesEndpoint::class);
+
         $customerProduct = CustomerProduct::factory()
             ->for($this->user->customer)
             ->for(Product::factory())
@@ -57,6 +63,17 @@ class CreateCustomerInvoiceTest extends TestCase
 
         $this->assertModelExists($customerProduct);
 
-        app()->make(InvoicesEndpoint::class)->create($customerProduct);
+        Http::fake([
+            'https://api.lexoffice.io/v1/invoices?finalize=true' => Http::response([
+                'voucherDate' => Lexoffice::buildLexofficeDate(now()),
+                'address' => $invoicesEndpoint->buildAddress($customerProduct),
+                'lineItems' => $invoicesEndpoint->buildLineItems($customerProduct),
+                'totalPrice' => $invoicesEndpoint->buildTotalPrice(),
+                'taxConditions' => $invoicesEndpoint->buildTaxConditions(),
+                'shippingConditions' => $invoicesEndpoint->buildShippingConditions()
+            ])
+        ]);
+
+        $invoicesEndpoint->create($customerProduct);
     }
 }
