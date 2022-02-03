@@ -4,6 +4,7 @@ namespace App\Services\Lexoffice;
 
 use App\Models\Customer;
 use App\Models\CustomerInvoice;
+use App\Services\Lexoffice\Endpoints\DunningEndpoint;
 use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use App\Services\Lexoffice\Endpoints\VoucherlistEndpoint;
 use Carbon\Carbon;
@@ -20,32 +21,18 @@ class Lexoffice
 
         $voucherlistEndpoint->setContactId($customer->lexoffice_id);
 
+        $voucherlistEndpoint->setPageSize(250);
+
         foreach ([
-                     VoucherlistEndpoint::VOUCHER_STATUS_OPEN.
-                     ','.VoucherlistEndpoint::VOUCHER_STATUS_PAID.
-                     ','.VoucherlistEndpoint::VOUCHER_STATUS_PAIDOFF.
-                     ','.VoucherlistEndpoint::VOUCHER_STATUS_VOIDED,
+                     VoucherlistEndpoint::VOUCHER_STATUS_NORMAL,
                      VoucherlistEndpoint::VOUCHER_STATUS_OVERDUE,
                  ] as $voucherStatus) {
             $voucherlistEndpoint->setVoucherType('invoice');
             $voucherlistEndpoint->setVoucherStatus($voucherStatus);
-            $voucherlistEndpoint->setPageSize(250);
             $page = 0;
 
             do {
-                $result = $voucherlistEndpoint->setPage($page)->index();
-                if ($result) {
-                    collect($result->content)->filter(function ($invoice) use ($customer, $reSync) {
-                        if (!$reSync && !$customer->invoices()->where('lexoffice_id', $invoice->id)->exists()
-                            || $reSync) {
-                            $invoiceData = app()->make(InvoicesEndpoint::class)->get(new CustomerInvoice([
-                                'lexoffice_id' => $invoice->id
-                            ]));
-
-                            self::storeCustomerInvoice($invoiceData, $customer, $reSync);
-                        }
-                    });
-                }
+                $result = self::loadInvoices($voucherlistEndpoint, $page, $customer, $reSync);
                 $page += 1;
             } while ($result && !$result->last);
         }
@@ -126,13 +113,18 @@ class Lexoffice
      * @param bool|null $reSync
      * @return void
      */
-    public static function storeCustomerInvoice(object $invoiceData, Customer $customer, ?bool $reSync = false): void
-    {
-        DB::transaction(function () use ($invoiceData, $customer, $reSync) {
+    public static function storeCustomerInvoice(
+        object $invoiceData,
+        Customer $customer,
+        string $type = 'invoice',
+        ?bool $reSync = false
+    ): void {
+        DB::transaction(function () use ($invoiceData, $customer, $reSync, $type) {
             $invoice = self::convertLexofficeInvoiceToCustomerInvoice($invoiceData);
             $customerInvoice = $customer->invoices()->updateOrCreate([
-                    'lexoffice_id' => $invoice['lexoffice_id']
-                ], $invoice);
+                'lexoffice_id' => $invoice['lexoffice_id'],
+                'type'         => $type,
+            ], $invoice);
 
             if ($reSync) {
                 $customerInvoice->position()->delete();
@@ -190,5 +182,56 @@ class Lexoffice
         $lexofficeInvoiceData->taxAmounts[0]->taxAmount = $totalNet * 0.19;
 
         return $lexofficeInvoiceData;
+    }
+
+    /**
+     * @param VoucherlistEndpoint $voucherlistEndpoint
+     * @param int $page
+     * @param Customer $customer
+     * @param bool $reSync
+     * @return object
+     */
+    private static function loadInvoices(
+        VoucherlistEndpoint $voucherlistEndpoint,
+        int $page,
+        Customer $customer,
+        bool $reSync
+    ): object {
+        $result = $voucherlistEndpoint->setPage($page)->index();
+        if ($result) {
+            collect($result->content)->filter(function ($invoice) use ($customer, $reSync) {
+                if (!$reSync && !$customer->invoices()->where('lexoffice_id', $invoice->id)->exists() || $reSync) {
+                    $invoiceData = app()->make(InvoicesEndpoint::class)->get(new CustomerInvoice([
+                        'lexoffice_id' => $invoice->id
+                    ]));
+
+                    self::storeCustomerInvoice($invoiceData, $customer, reSync: $reSync);
+
+                    self::loadDunningForInvoice($invoiceData, $customer, $reSync);
+                }
+            });
+        }
+        return $result;
+    }
+
+    /**
+     * @param object $invoiceData
+     * @param Customer $customer
+     * @return void
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    private static function loadDunningForInvoice(object $invoiceData, Customer $customer, bool $reSync): void
+    {
+        if (property_exists($invoiceData, 'relatedVouchers')) {
+            collect($invoiceData->relatedVouchers)->filter(function ($voucher) {
+                if ($voucher->voucherType === 'dun') {
+                    return $voucher;
+                }
+            })->each(function ($dunning) use ($customer, $reSync) {
+                $dunningData = app()->make(DunningEndpoint::class)->get($dunning->id);
+
+                self::storeCustomerInvoice($dunningData, $customer, 'dunning', $reSync);
+            });
+        }
     }
 }

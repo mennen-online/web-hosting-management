@@ -21,6 +21,8 @@ class VoucherlistEndpoint extends Connector
 
     public const VOUCHER_STATUS_SEPADEBIT = 'sepadebit';
 
+    public const VOUCHER_STATUS_NORMAL = VoucherlistEndpoint::VOUCHER_STATUS_OPEN . ',' . VoucherlistEndpoint::VOUCHER_STATUS_PAID . ',' . VoucherlistEndpoint::VOUCHER_STATUS_PAIDOFF . ',' . VoucherlistEndpoint::VOUCHER_STATUS_VOIDED;
+
     protected ?string $voucherType = null;
 
     protected ?string $voucherStatus = null;
