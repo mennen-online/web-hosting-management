@@ -34,7 +34,7 @@ class Lexoffice
             do {
                 $result = self::loadInvoices($voucherlistEndpoint, $page, $customer, $reSync);
                 $page += 1;
-            } while ($result && !$result->last);
+            } while (property_exists($result, 'last') && !$result->last);
         }
     }
 
