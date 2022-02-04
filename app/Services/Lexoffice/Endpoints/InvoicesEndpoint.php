@@ -7,34 +7,51 @@ use App\Models\CustomerInvoice;
 use App\Models\CustomerProduct;
 use App\Services\Internetworx\Objects\DomainObject;
 use App\Services\Lexoffice\Connector;
+use App\Services\Lexoffice\Lexoffice;
 use Carbon\Carbon;
+use DateTime;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class InvoicesEndpoint extends Connector
 {
-    public function get(CustomerInvoice $customerInvoice) {
+    public function get(CustomerInvoice $customerInvoice)
+    {
         return $this->getRequest('/invoices/' . $customerInvoice->lexoffice_id);
     }
 
-    public function renderInvoice(CustomerInvoice $customerInvoice) {
+    public function getAll(Collection $collection)
+    {
+        return retry(5, function () use ($collection) {
+            return collect($this->getAllRequest('/invoices/', $collection->toArray()))->map(function ($response) {
+                return $response->object();
+            });
+        }, 60000);
+    }
+
+    public function renderInvoice(CustomerInvoice $customerInvoice)
+    {
         $this->acceptableStatusCodes[] = 406;
 
         $response = $this->getRequest('/invoices/' . $customerInvoice->lexoffice_id . '/document');
 
-        if(property_exists($response, 'documentFileId')) {
+        if (property_exists($response, 'documentFileId')) {
             Log::info('Lexoffice ID: ' . $customerInvoice->lexoffice_id . ' DFID: ' . $response->documentFileId);
             return app()->make(FilesEndpoint::class)->get($response->documentFileId);
         }
     }
 
-    public function getRedirect(CustomerInvoice $customerInvoice) {
+    public function getRedirect(CustomerInvoice $customerInvoice)
+    {
         return 'https://app.lexoffice.de/permalink/invoices/view/' . $customerInvoice->lexoffice_id;
     }
 
-    public function create(CustomerProduct $customerProduct) {
+    public function create(CustomerProduct $customerProduct, ?Carbon $voucherDate = null)
+    {
         $data = [
-            'voucherDate' => $this->buildLexofficeDate(now()),
+            'voucherDate' => Lexoffice::buildLexofficeDate($voucherDate ?? now()),
             'address' => $this->buildAddress($customerProduct),
             'lineItems' => $this->buildLineItems($customerProduct),
             'totalPrice' => $this->buildTotalPrice(),
@@ -45,17 +62,21 @@ class InvoicesEndpoint extends Connector
         return $this->postRequest('/invoices?finalize=true', $data);
     }
 
-    private function buildAddress(CustomerProduct $customerProduct) {
-        if($customerProduct->customer->lexoffice_id !== null) {
+    public function buildAddress(CustomerProduct $customerProduct)
+    {
+        if ($customerProduct->customer->lexoffice_id !== null) {
             return [
                 'contactId' => $customerProduct->customer->lexoffice_id
             ];
         }
 
-        throw new LexofficeException('Customer '. $customerProduct->customer->user->email .' not exists in Lexoffice');
+        throw new LexofficeException(
+            'Customer ' . $customerProduct->customer->user->email . ' not exists in Lexoffice'
+        );
     }
 
-    private function buildLineItems(CustomerProduct $customerProduct) {
+    public function buildLineItems(CustomerProduct $customerProduct)
+    {
         $product = $customerProduct->product;
 
         $domain = $customerProduct->domain;
@@ -90,31 +111,26 @@ class InvoicesEndpoint extends Connector
         ];
     }
 
-    private function buildTotalPrice() {
+    public function buildTotalPrice()
+    {
         return [
             'currency' => 'EUR'
         ];
     }
 
-    private function buildTaxConditions() {
+    public function buildTaxConditions()
+    {
         return [
             'taxType' => 'net'
         ];
     }
 
-    private function buildShippingConditions() {
+    public function buildShippingConditions()
+    {
         return [
-            'shippingType' => 'serviceperiod',
-            'shippingDate' => $this->buildLexofficeDate(now()),
-            'shippingEndDate' => $this->buildLexofficeDate(now()->addYear())
+            'shippingType'    => 'serviceperiod',
+            'shippingDate'    => Lexoffice::buildLexofficeDate(now()),
+            'shippingEndDate' => Lexoffice::buildLexofficeDate(now()->addYear())
         ];
-    }
-
-    private function buildLexofficeDate(Carbon $carbon) {
-        $date = date('c', strtotime($carbon->format('Y-m-d\TH:i:s.vO')));
-
-        $milliseconds = Str::substr($carbon->format('v'), 0, 3);
-
-        return Str::replace('+', '.' . $milliseconds.'+', $date);
     }
 }

@@ -47,11 +47,11 @@ class PermissionSeeder extends Seeder
      */
     public function run()
     {
-        foreach($this->models as $modelFQCN) {
-            foreach($this->actions as $action) {
+        foreach ($this->models as $modelFQCN) {
+            foreach ($this->actions as $action) {
                 $model = new $modelFQCN();
                 $permissionName = $action . '-' . $modelFQCN;
-                if($action === 'forceDelete' && method_exists($model, 'forceDelete') || $action !== 'forceDelete') {
+                if ($action === 'forceDelete' && method_exists($model, 'forceDelete') || $action !== 'forceDelete') {
                     Permission::create(
                         [
                             'name' => $permissionName

@@ -43,13 +43,16 @@ class SyncForgeServers extends Command
 
         $response = $serversEndpoint->index();
 
-        $this->withProgressBar($response->servers, function($server) {
-            Server::updateOrCreate(
-                [
-                    'forge_id' => $server->id
-                ]
-            );
-        });
+        $this->withProgressBar(
+            $response->servers,
+            function ($server) {
+                Server::updateOrCreate(
+                    [
+                        'forge_id' => $server->id
+                    ]
+                );
+            }
+        );
         return 0;
     }
 }

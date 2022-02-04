@@ -8,18 +8,22 @@ use Illuminate\Support\Str;
 
 class ServersEndpoint extends Connector
 {
-    public function index() {
+    public function index()
+    {
         return $this->getRequest('/servers')->object();
     }
 
-    public function get(Server $server) {
+    public function get(Server $server)
+    {
         return $this->getRequest('/servers/' . $server->forge_id)->object();
     }
 
-    public function create(array $params = [
-        'type' => 'app',
-        'provider' => 'hetzner'
-    ]) {
+    public function create(
+        array $params = [
+            'type' => 'app',
+            'provider' => 'hetzner'
+        ]
+    ) {
         $credentials = collect(app()->make(CredentialsEndpoint::class)->index()->credentials);
         $regions = collect(app()->make(RegionsEndpoint::class)->index()->regions->hetzner);
         $region = $regions->random(1)->first();
@@ -33,13 +37,18 @@ class ServersEndpoint extends Connector
         return $this->postRequest('/servers/', $params)->object();
     }
 
-    public function delete(Server $server) {
+    public function delete(Server $server)
+    {
         return $this->deleteRequest('/servers/' . $server->forge_id)->successful();
     }
 
-    public function events(?Server $server) {
-        return $this->getRequest('/servers/events', $server ? [
-            'server_id' => $server->forge_id
-        ] : []);
+    public function events(?Server $server)
+    {
+        return $this->getRequest(
+            '/servers/events',
+            $server ? [
+                'server_id' => $server->forge_id
+            ] : []
+        );
     }
 }

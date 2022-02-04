@@ -2,17 +2,17 @@
 
 namespace App\Nova;
 
-use App\Services\Lexoffice\Endpoints\ContactsEndpoint;
+use App\Nova\Actions\Customer\SyncInvoices;
 use Armincms\Fields\Chain;
 use Illuminate\Http\Request;
 use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Fields\HasMany;
+use Laravel\Nova\Fields\HasOne;
 use Laravel\Nova\Fields\ID;
+use Laravel\Nova\Fields\MorphMany;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\Text;
-use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Fields\Trix;
-use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Panel;
 
 class Customer extends Resource
@@ -37,7 +37,7 @@ class Customer extends Resource
      * @var array
      */
     public static $search = [
-        'id',
+        'id', 'first_name', 'last_name', 'email'
     ];
 
     //public static $displayInNavigation = false;
@@ -45,128 +45,120 @@ class Customer extends Resource
     /**
      * Get the fields displayed by the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public function fields(Request $request) {
-        $customer = null;
-        if ($this->lexoffice_id !== null) {
-            $customer = app()->make(ContactsEndpoint::class)->get($this->lexoffice_id);
-        }
-
-        $fields = [
+    public function fields(Request $request)
+    {
+        return [
             BelongsTo::make(__('User'))->withoutTrashed(),
             ID::make(__('ID'))->readonly(true)->showOnIndex(false),
             Text::make(__('Lexoffice ID'))->readonly(true)->showOnIndex(false),
-            Text::make(__('Kundennummer'), 'customer_number', function() use($customer) {
-                return $customer->roles->customer->number;
-            })->showOnCreating(false)->showOnUpdating(is_object($customer) && property_exists($customer, 'roles'))->readonly(true),
-            new Panel(__('Billing'), function() use($customer){
-                if($customer !== null) {
+            Text::make(__('Kundennummer'), 'number')->showOnCreating(false),
+            Text::make(__('Straße & Nr.'), 'address.street')->readonly(true),
+            Text::make(__('PLZ'), 'address.zip')->readonly(true),
+            Text::make(__('Ort'), 'address.city')->readonly(true),
+            new Panel(
+                __('Tasks'),
+                function () {
                     return [
-                        Text::make(__('Street & Number'), 'street_number', function () use ($customer) {
-                            return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->street : '';
-                        })->readonly($this->addressCanBeUpdated($customer)),
-                        Text::make(__('Supplement'), 'supplement', function () use ($customer) {
-                            return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->supplement : '';
-                        })->readonly($this->addressCanBeUpdated($customer)),
-                        Text::make(__('Postcode'), 'postcode', function () use ($customer) {
-                            return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->zip : '';
-                        })->readonly($this->addressCanBeUpdated($customer)),
-                        Text::make(__('City'), 'city', function () use ($customer) {
-                            return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->city : '';
-                        })->readonly($this->addressCanBeUpdated($customer)),
-                        Select::make(__('Country'), 'countryCode', function () use ($customer) {
-                            return property_exists($customer, 'addresses') ? $customer->addresses->billing[0]->countryCode : '';
-                        })->options([
-                            'DE' => 'Deutschland',
-                            'IT' => 'Italien',
-                            'FR' => 'Frankreich'
-                        ])->readonly($this->addressCanBeUpdated($customer))
+                        MorphMany::make(__('Tasks'))
                     ];
                 }
-            }),
+            ),
+            new Panel(
+                __('Billing'),
+                function () {
+                    return [HasOne::make('CustomerAddress', 'address')];
+                }
+            ),
             HasMany::make(__('Customer Contact'), 'contacts')->showOnCreating(false),
             HasMany::make(__('Customer Invoices'), 'invoices')->showOnCreating(false),
             HasMany::make(__('Customer Products'), 'products')->showOnCreating(false),
-            Chain::as('customer_type', function () {
-                return [
-                    Select::make(__('Art des Kunden'), 'customer_type')->options([
-                        'company' => 'Unternehmen',
-                        'person'  => 'Privatperson'
-                    ])
-                ];
-            })->showOnUpdating(false)->showOnCreating(true),
-            Chain::with('customer_type', function ($request) {
-                return match ($request->input('customer_type')) {
-                    'company' => [
-                        Text::make(__('Name des Unternehmens'), 'company.name'),
-                        Text::make(__('Steuernummer'), 'taxNumber'),
-                        Text::make(__('Umsatzsteuer ID'), 'vatRegistrationId'),
-                        HasMany::make(__('Contact Persons'), 'contacts', CustomerContact::class)
-                    ],
-                    'person' => [
-                        Select::make(__('Anrede'), 'salutation')->options([
-                            'Herr' => 'Herr',
-                            'Frau' => 'Frau'
-                        ]),
-                        Text::make(__('Vorname'), 'firstName'),
-                        Text::make(__('Nachname'), 'lastName'),
-                        Trix::make(__('Notizen'), 'note')
-                    ],
-                    null => []
-                };
-            })->showOnUpdating(false)->showOnCreating(true)
+            Chain::as(
+                'customer_type',
+                function () {
+                    return [
+                        Select::make(__('Art des Kunden'), 'customer_type')->options(
+                            [
+                                'company' => 'Unternehmen',
+                                'person' => 'Privatperson'
+                            ]
+                        )
+                    ];
+                }
+            )->showOnUpdating(false)->showOnCreating(true),
+            Chain::with(
+                'customer_type',
+                function ($request) {
+                    return match ($request->input('customer_type')) {
+                        'company' => [
+                            Text::make(__('Name des Unternehmens'), 'company.name'),
+                            Text::make(__('Steuernummer'), 'taxNumber'),
+                            Text::make(__('Umsatzsteuer ID'), 'vatRegistrationId'),
+                            HasMany::make(__('Contact Persons'), 'contacts', CustomerContact::class)
+                        ],
+                        'person' => [
+                            Select::make(__('Anrede'), 'salutation')->options(
+                                [
+                                    'Herr' => 'Herr',
+                                    'Frau' => 'Frau'
+                                ]
+                            ),
+                            Text::make(__('Vorname'), 'firstName'),
+                            Text::make(__('Nachname'), 'lastName'),
+                            Trix::make(__('Notizen'), 'note')
+                        ],
+                        default => []
+                    };
+                }
+            )->showOnUpdating(false)->showOnCreating(true)
         ];
-
-        return $fields;
     }
 
     /**
      * Get the cards available for the request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public
-    function cards(Request $request) {
+    public function cards(Request $request)
+    {
         return [];
     }
 
     /**
      * Get the filters available for the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public
-    function filters(Request $request) {
+    public function filters(Request $request)
+    {
         return [];
     }
 
     /**
      * Get the lenses available for the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public
-    function lenses(Request $request) {
+    public function lenses(Request $request)
+    {
         return [];
     }
 
     /**
      * Get the actions available for the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public
-    function actions(Request $request) {
-        return [];
-    }
-
-    private function addressCanBeUpdated(object $customer) {
-        return (property_exists($customer, 'addresses') && property_exists($customer->addresses, 'billing') && count($customer->addresses->billing) > 1);
+    public function actions(Request $request)
+    {
+        return [
+            new SyncInvoices()
+        ];
     }
 }

@@ -7,11 +7,13 @@ use App\Services\Forge\Connector;
 
 class PhpMyAdminEndpoint extends Connector
 {
-    public function install(Server $server, int $siteId) {
+    public function install(Server $server, int $siteId)
+    {
         return $this->postRequest('/servers/' . $server->forge_id . '/sites/' . $siteId . '/phpmyadmin');
     }
 
-    public function uninstall(Server $server, int $siteId) {
+    public function uninstall(Server $server, int $siteId)
+    {
         return $this->deleteRequest('/servers/' . $server->forge_id . '/sites/' . $siteId . '/phpmyadmin', null);
     }
 }

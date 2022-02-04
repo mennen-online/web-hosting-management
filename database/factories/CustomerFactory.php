@@ -3,10 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\Customer;
+use App\Models\CustomerAddress;
 use App\Models\CustomerContact;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class CustomerFactory extends Factory
 {
@@ -24,28 +26,26 @@ class CustomerFactory extends Factory
      */
     public function definition()
     {
-        $user = User::factory()->create();
         return [
-            'user_id' => $user->id,
             'customer_type' => 'person',
+            'lexoffice_id' => $this->faker->uuid,
             'salutation' => '',
-            'firstName' => $user->first_name,
-            'lastName' => $user->last_name
+            'first_name' => $this->faker->firstName,
+            'last_name' => $this->faker->lastName,
+            'email' => $this->faker->safeEmail,
         ];
     }
 
-    public function configure() {
-        return $this->afterCreating(function(Customer $customer) {
-            $customer->update([
-                'street_number' => 'Teststraße 123',
-                'postcode' => '12345',
-                'city' => 'Testort',
-                'countryCode' => 'DE'
-            ]);
-
-            $customer = Customer::find($customer->id);
-
-            CustomerContact::factory()->for($customer)->create();
+    public function company()
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'customer_type' => 'company',
+                'companyName' => $this->faker->company,
+                'allowTaxFreeInvoices' => $this->faker->boolean,
+                'taxNumber' => $this->faker->numberBetween(),
+                'vatRegistrationId' => 'DE'.$this->faker->numberBetween(100000000, 999999999)
+            ];
         });
     }
 }

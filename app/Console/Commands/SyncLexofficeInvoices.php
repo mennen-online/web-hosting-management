@@ -3,8 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Models\Customer;
+use App\Services\Lexoffice\Endpoints\InvoicesEndpoint;
 use App\Services\Lexoffice\Endpoints\VoucherlistEndpoint;
+use App\Services\Lexoffice\Lexoffice;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 
 class SyncLexofficeInvoices extends Command
 {
@@ -22,17 +25,23 @@ class SyncLexofficeInvoices extends Command
      */
     protected $description = 'Sync Invoices with Lexoffice';
 
-    protected VoucherlistEndpoint $voucherlistEndpoint;
-
     /**
      * Create a new command instance.
      *
      * @return void
      */
-    public function __construct() {
+    public function __construct(
+        protected InvoicesEndpoint $invoicesEndpoint,
+        protected VoucherlistEndpoint $voucherlistEndpoint,
+        protected Collection $invoices,
+    ) {
         parent::__construct();
 
         $this->voucherlistEndpoint = app()->make(VoucherlistEndpoint::class);
+
+        $this->invoicesEndpoint = app()->make(InvoicesEndpoint::class);
+
+        $this->invoices = collect();
     }
 
     /**
@@ -40,71 +49,19 @@ class SyncLexofficeInvoices extends Command
      *
      * @return int
      */
-    public function handle() {
+    public function handle()
+    {
         if ($this->voucherlistEndpoint->isLexofficeAvailable()) {
-            $customers = Customer::all()->filter(function($customer) {
-                if($customer->invoices()->first() === null) {
-                    return $customer;
-                }
-            });
-            $this->withProgressBar($customers, function ($customer) {
-                $this->processImportCustomer($customer);
+            Customer::orderBy('number')->chunk(50, function ($customers) {
+                $this->withProgressBar($customers, fn($customer) => $this->processImportCustomer($customer));
+                sleep(60);
             });
         }
         return 0;
     }
 
-    private function processImportCustomer($customer) {
-        $customerInvoices = collect();
-        foreach ([
-            'draft',
-            'open',
-            'overdue',
-            'paid',
-            'paidoff',
-            'voided',
-            'transferred',
-            'sepadebit'
-        ] as $voucherStatus) {
-            foreach ([
-                'invoice',
-                'creditnote'
-            ] as $voucherType) {
-                $this->voucherlistEndpoint->setVoucherType($voucherType);
-                $this->voucherlistEndpoint->setContactId($customer->lexoffice_id);
-                $this->voucherlistEndpoint->setVoucherStatus($voucherStatus);
-
-                $this->voucherlistEndpoint->setPageSize(250);
-
-                $page = 0;
-
-                do {
-                    $result = $this->voucherlistEndpoint->setPage($page)->index();
-                    if($result) {
-                        foreach ($result->content as $invoice) {
-                            $customerInvoices->add($invoice);
-                        }
-                    }
-
-                    $page += 1;
-                } while ($result &&$result->last === false);
-            }
-        }
-
-        if ($customerInvoices->count() !== $customer->invoices()->count()) {
-            $customerInvoices->each(function ($invoice) use ($customer) {
-                $this->processInvoice($customer, $invoice);
-            });
-        } else {
-            $this->info($customer->id . ' has no new Invoices');
-        }
-    }
-
-    private
-    function processInvoice($customer, $invoice) {
-        $this->info('Processing Invoice '.$invoice->voucherNumber);
-        $customer->invoices()->firstOrCreate([
-            'lexoffice_id' => $invoice->id
-        ]);
+    private function processImportCustomer($customer)
+    {
+        Lexoffice::getNewInvoiceNumbersByCustomer($customer);
     }
 }

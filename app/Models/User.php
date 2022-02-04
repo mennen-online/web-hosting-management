@@ -3,11 +3,25 @@
 namespace App\Models;
 
 use Illuminate\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+
+/**
+ *
+ * @property Customer $customer
+ * @property Collection $roles
+ * @property Collection $customerContacts
+ * @property Collection $customerInvoices
+ * @property Collection $customerProducts
+ * @property string $name
+ */
 
 class User extends Authenticatable
 {
@@ -44,27 +58,71 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function roles() {
+    public function isAdmin()
+    {
+        return $this->hasRole('Administrator');
+    }
+
+    public function isCustomer()
+    {
+        return $this->hasRole('Customer');
+    }
+
+    public function hasRole(string $role)
+    {
+        return $this->roles()->where('name', $role)->exists();
+    }
+
+    /**
+     * @return BelongsToMany
+     */
+    public function roles()
+    {
         return $this->belongsToMany(Role::class, 'users_roles');
     }
 
-    public function customer() {
+    /**
+     * @return HasOne
+     */
+    public function customer()
+    {
         return $this->hasOne(Customer::class);
     }
 
-    public function customerContacts() {
+    /**
+     * @return HasManyThrough
+     */
+    public function customerContacts()
+    {
         return $this->hasManyThrough(CustomerContact::class, Customer::class);
     }
 
-    public function customerInvoices() {
+    /**
+     * @return HasManyThrough
+     */
+    public function customerInvoices()
+    {
         return $this->hasManyThrough(CustomerInvoice::class, Customer::class);
     }
 
-    public function customerProducts() {
+    /**
+     * @return HasManyThrough
+     */
+    public function customerProducts()
+    {
         return $this->hasManyThrough(CustomerProduct::class, Customer::class);
     }
 
-    public function getNameAttribute() {
+    /**
+     * @return string
+     */
+    public function getNameAttribute()
+    {
         return $this->first_name . ' ' . $this->last_name;
+    }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
     }
 }
